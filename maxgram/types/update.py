@@ -67,7 +67,7 @@ class Update(MaxObject):
 
     @property
     def event(self) -> Any:
-        """Return the event object based on update_type."""
+        """Return the typed event object based on update_type."""
         if self.update_type == "message_created":
             if self.message is not None:
                 return self.message
@@ -78,17 +78,22 @@ class Update(MaxObject):
         elif self.update_type == "message_callback":
             if self.callback is not None:
                 return self.callback
-        elif self.update_type in (
-            "message_removed",
-            "bot_started", "bot_stopped",
-            "bot_added", "bot_removed",
-            "user_added", "user_removed",
-            "chat_title_changed",
-            "dialog_muted", "dialog_unmuted",
-            "dialog_cleared", "dialog_removed",
-        ):
-            return self
+        else:
+            from .events import EVENT_TYPE_MAP
+
+            event_cls = EVENT_TYPE_MAP.get(self.update_type)
+            if event_cls is not None:
+                return self._as_typed_event(event_cls)
 
         raise UpdateTypeLookupError(
             f"Unknown or unsupported update type: {self.update_type}"
         )
+
+    def _as_typed_event(self, cls: type) -> Any:
+        """Convert this Update to a typed event subclass."""
+        data = self.model_dump()
+        try:
+            ctx = {"bot": self.bot}
+        except Exception:
+            ctx = None
+        return cls.model_validate(data, context=ctx)

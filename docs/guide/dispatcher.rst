@@ -118,42 +118,62 @@ Router
 Регистрация обработчиков
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Через декораторы:
+Через декораторы. Каждый тип события имеет свой типизированный класс:
 
 .. code-block:: python
 
+   from maxgram.types import (
+       Message, Callback,
+       BotStarted, BotStopped, BotAdded, BotRemoved,
+       UserAdded, UserRemoved, ChatTitleChanged,
+       MessageRemoved, DialogMuted,
+   )
+
+   # Сообщения — event: Message
    @router.message()
-   async def handle_message(message, bot):
+   async def handle_message(message: Message, bot):
        await message.answer(text="Got it!")
 
    @router.message_callback()
-   async def handle_callback(callback, bot):
+   async def handle_callback(callback: Callback, bot):
        await callback.answer(notification="Clicked!")
 
    @router.message_edited()
-   async def handle_edit(message, bot):
+   async def handle_edit(message: Message, bot):
        print(f"Message edited: {message.body.mid}")
 
+   # Бот — event: BotStarted, BotStopped, BotAdded, BotRemoved
    @router.bot_started()
-   async def handle_start(event, bot):
-       # event — это Update с полями: user, chat_id, payload
-       if event.user:
-           print(f"{event.user.first_name} started the bot")
+   async def handle_start(event: BotStarted, bot):
+       print(f"{event.user.first_name} started the bot")
+       if event.payload:
+           print(f"Deep link: {event.payload}")
 
    @router.bot_added()
-   async def handle_bot_added(event, bot):
-       # event.chat_id, event.user, event.is_channel
-       print(f"Bot added to chat {event.chat_id}")
+   async def handle_bot_added(event: BotAdded, bot):
+       print(f"Bot added to chat {event.chat_id}, channel={event.is_channel}")
 
+   # Пользователи — event: UserAdded, UserRemoved
    @router.user_added()
-   async def handle_user_added(event, bot):
-       # event.chat_id, event.user, event.inviter_id, event.is_channel
-       print(f"User {event.user.first_name} added to chat")
+   async def handle_user_added(event: UserAdded, bot):
+       print(f"{event.user.first_name} joined chat {event.chat_id}")
+       if event.inviter_id:
+           print(f"Invited by {event.inviter_id}")
 
+   # Удаление сообщений — event: MessageRemoved
    @router.message_removed()
-   async def handle_removed(event, bot):
-       # event.message_id, event.chat_id, event.user_id
-       print(f"Message {event.message_id} removed")
+   async def handle_removed(event: MessageRemoved, bot):
+       print(f"Message {event.message_id} removed from {event.chat_id}")
+
+   # Чат — event: ChatTitleChanged
+   @router.chat_title_changed()
+   async def handle_title(event: ChatTitleChanged, bot):
+       print(f"New title: {event.title}")
+
+   # Диалоги — event: DialogMuted и т.д.
+   @router.dialog_muted()
+   async def handle_muted(event: DialogMuted, bot):
+       print(f"Muted until {event.muted_until}")
 
    @router.error()
    async def handle_error(error, bot):

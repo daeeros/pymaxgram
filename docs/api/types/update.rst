@@ -51,7 +51,7 @@ Update
      - ``Message``
    * - ``message_removed``
      - ``message_id``, ``chat_id``, ``user_id``
-     - ``Update``
+     - ``MessageRemoved``
 
 **Бот:**
 
@@ -64,16 +64,16 @@ Update
      - Event
    * - ``bot_started``
      - ``chat_id``, ``user``, ``payload?``, ``user_locale?``
-     - ``Update``
+     - ``BotStarted``
    * - ``bot_stopped``
      - ``chat_id``, ``user``, ``user_locale``
-     - ``Update``
+     - ``BotStopped``
    * - ``bot_added``
      - ``chat_id``, ``user``, ``is_channel``
-     - ``Update``
+     - ``BotAdded``
    * - ``bot_removed``
      - ``chat_id``, ``user``, ``is_channel``
-     - ``Update``
+     - ``BotRemoved``
 
 **Пользователи и чат:**
 
@@ -86,13 +86,13 @@ Update
      - Event
    * - ``user_added``
      - ``chat_id``, ``user``, ``inviter_id?``, ``is_channel``
-     - ``Update``
+     - ``UserAdded``
    * - ``user_removed``
      - ``chat_id``, ``user``, ``admin_id?``, ``is_channel``
-     - ``Update``
+     - ``UserRemoved``
    * - ``chat_title_changed``
      - ``chat_id``, ``user``, ``title``
-     - ``Update``
+     - ``ChatTitleChanged``
 
 **Диалоги:**
 
@@ -105,57 +105,80 @@ Update
      - Event
    * - ``dialog_muted``
      - ``chat_id``, ``user``, ``muted_until``, ``user_locale``
-     - ``Update``
+     - ``DialogMuted``
    * - ``dialog_unmuted``
      - ``chat_id``, ``user``, ``user_locale``
-     - ``Update``
+     - ``DialogUnmuted``
    * - ``dialog_cleared``
      - ``chat_id``, ``user``, ``user_locale``
-     - ``Update``
+     - ``DialogCleared``
    * - ``dialog_removed``
      - ``chat_id``, ``user``, ``user_locale``
-     - ``Update``
+     - ``DialogRemoved``
 
-Свойства
---------
+Типизированные event-классы
+----------------------------
 
-event_type
-^^^^^^^^^^
+Каждый тип события возвращает типизированный объект. Импорт из ``maxgram.types``:
 
-Возвращает ``update_type``. Используется диспетчером для маршрутизации.
+.. code-block:: python
 
-event
-^^^^^
+   from maxgram.types import (
+       Message, Callback,                         # message_created, message_callback
+       BotStarted, BotStopped,                    # bot lifecycle
+       BotAdded, BotRemoved,                      # bot in chat
+       UserAdded, UserRemoved,                    # user in chat
+       ChatTitleChanged, MessageRemoved,           # chat events
+       DialogMuted, DialogUnmuted,                # dialog events
+       DialogCleared, DialogRemoved,
+   )
 
-Возвращает объект события:
+Свойство ``event``
+^^^^^^^^^^^^^^^^^^^
 
 - ``message_created`` → ``Message``
-- ``message_callback`` → ``Callback`` (с заполненным ``callback.message``)
+- ``message_callback`` → ``Callback``
 - ``message_edited`` → ``Message``
-- Все остальные → ``Update`` (сам объект с полями ``chat_id``, ``user`` и т.д.)
+- ``message_removed`` → ``MessageRemoved``
+- ``bot_started`` → ``BotStarted``
+- ``bot_stopped`` → ``BotStopped``
+- ``bot_added`` → ``BotAdded``
+- ``bot_removed`` → ``BotRemoved``
+- ``user_added`` → ``UserAdded``
+- ``user_removed`` → ``UserRemoved``
+- ``chat_title_changed`` → ``ChatTitleChanged``
+- ``dialog_muted`` → ``DialogMuted``
+- ``dialog_unmuted`` → ``DialogUnmuted``
+- ``dialog_cleared`` → ``DialogCleared``
+- ``dialog_removed`` → ``DialogRemoved``
 
 Примеры
 -------
 
 .. code-block:: python
 
+   from maxgram.types import BotStarted, UserAdded, MessageRemoved, BotAdded
+
    @router.bot_started()
-   async def on_start(event, bot):
-       # event — это Update
-       print(f"User {event.user.first_name} started bot")
+   async def on_start(event: BotStarted, bot):
+       print(f"{event.user.first_name} started bot")
        print(f"Chat: {event.chat_id}")
        if event.payload:
            print(f"Deep link: {event.payload}")
 
+   @router.bot_added()
+   async def on_bot_added(event: BotAdded, bot):
+       print(f"Added to {'channel' if event.is_channel else 'chat'} {event.chat_id}")
+
    @router.user_added()
-   async def on_user_added(event, bot):
-       print(f"{event.user.first_name} added to chat {event.chat_id}")
+   async def on_user_added(event: UserAdded, bot):
+       print(f"{event.user.first_name} joined chat {event.chat_id}")
        if event.inviter_id:
-           print(f"Invited by user {event.inviter_id}")
+           print(f"Invited by {event.inviter_id}")
 
    @router.message_removed()
-   async def on_removed(event, bot):
-       print(f"Message {event.message_id} removed from chat {event.chat_id}")
+   async def on_removed(event: MessageRemoved, bot):
+       print(f"Message {event.message_id} removed from {event.chat_id}")
 
 UpdateTypeLookupError
 ---------------------

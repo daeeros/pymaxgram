@@ -39,6 +39,20 @@ from .new_message_link import NewMessageLink
 from .recipient import Recipient
 from .subscription import Subscription
 from .update import Update, UpdateTypeLookupError
+from .events import (
+    BotAdded,
+    BotRemoved,
+    BotStarted,
+    BotStopped,
+    ChatTitleChanged,
+    DialogCleared,
+    DialogMuted,
+    DialogRemoved,
+    DialogUnmuted,
+    MessageRemoved,
+    UserAdded,
+    UserRemoved,
+)
 from .upload_info import UploadInfo
 from .user import User
 from .user_with_photo import UserWithPhoto
@@ -55,6 +69,18 @@ ErrorEvent.model_rebuild()
 __all__ = [
     "ErrorEvent",
     "Attachment",
+    "BotAdded",
+    "BotRemoved",
+    "BotStarted",
+    "BotStopped",
+    "ChatTitleChanged",
+    "DialogCleared",
+    "DialogMuted",
+    "DialogRemoved",
+    "DialogUnmuted",
+    "MessageRemoved",
+    "UserAdded",
+    "UserRemoved",
     "AttachmentRequest",
     "AudioAttachment",
     "AudioAttachmentRequest",
