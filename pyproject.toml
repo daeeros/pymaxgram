@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pymaxgram"
+dynamic = ["version"]
+description = "Async framework for MAX Messenger Bot API"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Communications :: Chat",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    "magic-filter>=1.0.12,<1.1",
+    "aiohttp>=3.9.0,<3.14",
+    "pydantic>=2.4.1,<2.13",
+    "aiofiles>=23.2.1,<26.0",
+    "certifi>=2023.7.22",
+    "typing-extensions>=4.7.0,<=5.0",
+]
+
+[project.urls]
+Repository = "https://github.com/daeeros/pymaxgram"
+
+[tool.hatch.version]
+path = "maxgram/__meta__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["maxgram"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "maxgram/",
+    "pyproject.toml",
+    "README.md",
+]

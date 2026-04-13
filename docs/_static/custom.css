@@ -1,0 +1,32 @@
+/* pymaxgram documentation custom styles */
+
+/* Sidebar branding */
+.sidebar-brand-text {
+    font-weight: 700;
+}
+
+/* Code blocks styling */
+.highlight pre {
+    border-radius: 8px;
+}
+
+/* API reference tables */
+table.docutils {
+    width: 100%;
+}
+
+/* Admonition styling */
+.admonition {
+    border-radius: 8px;
+}
+
+/* Version badge */
+.version-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: 600;
+    background-color: var(--color-brand-primary);
+    color: white;
+}

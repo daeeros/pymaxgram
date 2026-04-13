@@ -1,0 +1,61 @@
+name: Auto Release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bump patch version
+        id: version
+        run: |
+          current=$(python -c "exec(open('maxgram/__meta__.py').read()); print(__version__)")
+          IFS='.' read -r major minor patch <<< "$current"
+          new_version="$major.$minor.$((patch + 1))"
+
+          # Check if tag already exists
+          while git rev-parse "v$new_version" >/dev/null 2>&1; do
+            echo "Tag v$new_version already exists, incrementing..."
+            IFS='.' read -r major minor patch <<< "$new_version"
+            new_version="$major.$minor.$((patch + 1))"
+          done
+
+          sed -i "s/__version__ = \"$current\"/__version__ = \"$new_version\"/" maxgram/__meta__.py
+          echo "version=$new_version" >> "$GITHUB_OUTPUT"
+          echo "Bumped version: $current -> $new_version"
+
+      - name: Install hatch and build
+        run: |
+          pip install hatch
+          hatch build
+
+      - name: Commit version bump and tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add maxgram/__meta__.py
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "bump version to ${{ steps.version.outputs.version }}"
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin main --tags
+
+      - name: Publish to PyPI
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.PYPI_API_TOKEN }}
+        run: hatch publish
