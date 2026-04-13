@@ -21,7 +21,18 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Check if skip
+        id: check
+        run: |
+          msg=$(git log -1 --pretty=%s)
+          if [[ "$msg" == bump\ version* ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Bump patch version
+        if: steps.check.outputs.skip != 'true'
         id: version
         run: |
           current=$(python -c "exec(open('maxgram/__meta__.py').read()); print(__version__)")
@@ -40,11 +51,13 @@ jobs:
           echo "Bumped version: $current -> $new_version"
 
       - name: Install hatch and build
+        if: steps.check.outputs.skip != 'true'
         run: |
           pip install hatch
           hatch build
 
       - name: Commit version bump and tag
+        if: steps.check.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -52,9 +65,11 @@ jobs:
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "bump version to ${{ steps.version.outputs.version }}"
           git tag "v${{ steps.version.outputs.version }}"
+          git pull --rebase origin main
           git push origin main --tags
 
       - name: Publish to PyPI
+        if: steps.check.outputs.skip != 'true'
         env:
           HATCH_INDEX_USER: __token__
           HATCH_INDEX_AUTH: ${{ secrets.PYPI_API_TOKEN }}

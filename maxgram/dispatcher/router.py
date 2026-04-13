@@ -24,10 +24,17 @@ class Router:
         self._parent_router: Router | None = None
         self.sub_routers: list[Router] = []
 
-        # MAX event observers (only 3 event types + error)
+        # MAX event observers
         self.message = MaxEventObserver(router=self, event_name="message_created")
+        self.message_removed = MaxEventObserver(router=self, event_name="message_removed")
+        self.message_edited = MaxEventObserver(router=self, event_name="message_edited")
         self.message_callback = MaxEventObserver(router=self, event_name="message_callback")
         self.bot_started = MaxEventObserver(router=self, event_name="bot_started")
+        self.bot_added = MaxEventObserver(router=self, event_name="bot_added")
+        self.bot_removed = MaxEventObserver(router=self, event_name="bot_removed")
+        self.user_added = MaxEventObserver(router=self, event_name="user_added")
+        self.user_removed = MaxEventObserver(router=self, event_name="user_removed")
+        self.chat_title_changed = MaxEventObserver(router=self, event_name="chat_title_changed")
 
         self.errors = self.error = MaxEventObserver(router=self, event_name="error")
 
@@ -36,8 +43,15 @@ class Router:
 
         self.observers: dict[str, MaxEventObserver] = {
             "message_created": self.message,
+            "message_removed": self.message_removed,
+            "message_edited": self.message_edited,
             "message_callback": self.message_callback,
             "bot_started": self.bot_started,
+            "bot_added": self.bot_added,
+            "bot_removed": self.bot_removed,
+            "user_added": self.user_added,
+            "user_removed": self.user_removed,
+            "chat_title_changed": self.chat_title_changed,
             "error": self.errors,
         }
 

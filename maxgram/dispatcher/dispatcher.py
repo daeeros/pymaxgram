@@ -146,13 +146,14 @@ class Dispatcher(Router):
     @staticmethod
     def _debug_update(update: Update) -> None:
         parts = [f"\n{'='*60}", f"UPDATE {update.update_type}"]
-        if update.update_type == "message_created" and update.message:
+        if update.update_type in ("message_created", "message_removed", "message_edited") and update.message:
             msg = update.message
             user = msg.sender
             text = msg.body.text if msg.body else None
             parts.append(f"  from: {user.first_name} (id={user.user_id})" if user else "  from: unknown")
             parts.append(f"  chat: {msg.recipient.chat_id} ({msg.recipient.chat_type})")
-            parts.append(f"  text: {text!r}" if text else "  text: (empty)")
+            if text:
+                parts.append(f"  text: {text!r}")
             if msg.body and msg.body.attachments:
                 parts.append(f"  attachments: {[a.type for a in msg.body.attachments]}")
         elif update.update_type == "message_callback" and update.callback:
@@ -162,13 +163,17 @@ class Dispatcher(Router):
             parts.append(f"  callback_id: {cb.callback_id[:20]}...")
             if cb.message:
                 parts.append(f"  message_mid: {cb.message.body.mid}")
-        elif update.update_type == "bot_started":
+        else:
             if update.user:
-                parts.append(f"  from: {update.user.first_name} (id={update.user.user_id})")
+                parts.append(f"  user: {update.user.first_name} (id={update.user.user_id})")
             if update.chat_id:
                 parts.append(f"  chat: {update.chat_id}")
+            if update.user_id:
+                parts.append(f"  user_id: {update.user_id}")
             if update.payload:
                 parts.append(f"  payload: {update.payload!r}")
+            if update.title:
+                parts.append(f"  title: {update.title!r}")
         parts.append("="*60)
         loggers.event.info("\n".join(parts))
 

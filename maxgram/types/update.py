@@ -25,6 +25,9 @@ class Update(MaxObject):
     chat_id: int | None = None
     user_locale: str | None = None
     payload: str | None = None
+    title: str | None = None
+    inviter_id: int | None = None
+    user_id: int | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -54,10 +57,17 @@ class Update(MaxObject):
         if self.update_type == "message_created":
             if self.message is not None:
                 return self.message
+        elif self.update_type in ("message_removed", "message_edited"):
+            if self.message is not None:
+                return self.message
+            return self
         elif self.update_type == "message_callback":
             if self.callback is not None:
                 return self.callback
-        elif self.update_type == "bot_started":
+        elif self.update_type in (
+            "bot_started", "bot_added", "bot_removed",
+            "user_added", "user_removed", "chat_title_changed",
+        ):
             return self
 
         raise UpdateTypeLookupError(
