@@ -26,16 +26,52 @@ Router
      - Имя роутера (по умолчанию ``hex(id(self))``)
    * - ``message``
      - ``MaxEventObserver``
-     - Наблюдатель событий ``message_created``
+     - ``message_created`` — новые сообщения
    * - ``message_callback``
      - ``MaxEventObserver``
-     - Наблюдатель событий ``message_callback``
+     - ``message_callback`` — нажатия inline-кнопок
+   * - ``message_edited``
+     - ``MaxEventObserver``
+     - ``message_edited`` — редактирование сообщений
+   * - ``message_removed``
+     - ``MaxEventObserver``
+     - ``message_removed`` — удаление сообщений
    * - ``bot_started``
      - ``MaxEventObserver``
-     - Наблюдатель событий ``bot_started``
+     - ``bot_started`` — запуск бота
+   * - ``bot_stopped``
+     - ``MaxEventObserver``
+     - ``bot_stopped`` — остановка бота
+   * - ``bot_added``
+     - ``MaxEventObserver``
+     - ``bot_added`` — бот добавлен в чат
+   * - ``bot_removed``
+     - ``MaxEventObserver``
+     - ``bot_removed`` — бот удалён из чата
+   * - ``user_added``
+     - ``MaxEventObserver``
+     - ``user_added`` — пользователь добавлен
+   * - ``user_removed``
+     - ``MaxEventObserver``
+     - ``user_removed`` — пользователь удалён
+   * - ``chat_title_changed``
+     - ``MaxEventObserver``
+     - ``chat_title_changed`` — название чата изменено
+   * - ``dialog_muted``
+     - ``MaxEventObserver``
+     - ``dialog_muted`` — уведомления отключены
+   * - ``dialog_unmuted``
+     - ``MaxEventObserver``
+     - ``dialog_unmuted`` — уведомления включены
+   * - ``dialog_cleared``
+     - ``MaxEventObserver``
+     - ``dialog_cleared`` — диалог очищен
+   * - ``dialog_removed``
+     - ``MaxEventObserver``
+     - ``dialog_removed`` — диалог удалён
    * - ``error`` / ``errors``
      - ``MaxEventObserver``
-     - Наблюдатель ошибок
+     - Ошибки обработки
    * - ``startup``
      - ``EventObserver``
      - Событие запуска

@@ -19,15 +19,29 @@ class Update(MaxObject):
 
     update_type: str
     timestamp: int = 0
+    # message_created, message_callback, message_edited
     message: Message | None = None
     callback: Callback | None = None
-    user: User | None = None
-    chat_id: int | None = None
     user_locale: str | None = None
+    # bot_started, bot_stopped, bot_added, bot_removed, user_added, user_removed,
+    # chat_title_changed, dialog_*
+    chat_id: int | None = None
+    user: User | None = None
+    # bot_started
     payload: str | None = None
+    # chat_title_changed
     title: str | None = None
+    # user_added
     inviter_id: int | None = None
+    # user_removed
+    admin_id: int | None = None
+    # bot_added, bot_removed, user_added, user_removed
+    is_channel: bool | None = None
+    # message_removed
+    message_id: str | None = None
     user_id: int | None = None
+    # dialog_muted
+    muted_until: int | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -57,7 +71,7 @@ class Update(MaxObject):
         if self.update_type == "message_created":
             if self.message is not None:
                 return self.message
-        elif self.update_type in ("message_removed", "message_edited"):
+        elif self.update_type == "message_edited":
             if self.message is not None:
                 return self.message
             return self
@@ -65,8 +79,13 @@ class Update(MaxObject):
             if self.callback is not None:
                 return self.callback
         elif self.update_type in (
-            "bot_started", "bot_added", "bot_removed",
-            "user_added", "user_removed", "chat_title_changed",
+            "message_removed",
+            "bot_started", "bot_stopped",
+            "bot_added", "bot_removed",
+            "user_added", "user_removed",
+            "chat_title_changed",
+            "dialog_muted", "dialog_unmuted",
+            "dialog_cleared", "dialog_removed",
         ):
             return self
 

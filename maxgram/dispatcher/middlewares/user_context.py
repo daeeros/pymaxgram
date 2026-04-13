@@ -43,7 +43,7 @@ class UserContextMiddleware(BaseMiddleware):
     @classmethod
     def resolve_event_context(cls, event: Update) -> EventContext:
         """Resolve user and chat from MAX Update object."""
-        if event.update_type in ("message_created", "message_removed", "message_edited"):
+        if event.update_type in ("message_created", "message_edited"):
             if event.message:
                 return EventContext(
                     chat_id=event.message.recipient.chat_id,
@@ -57,9 +57,17 @@ class UserContextMiddleware(BaseMiddleware):
                 chat_id=chat_id,
                 user=event.callback.user,
             )
+        if event.update_type == "message_removed":
+            return EventContext(
+                chat_id=event.chat_id,
+            )
         if event.update_type in (
-            "bot_started", "bot_added", "bot_removed",
-            "user_added", "user_removed", "chat_title_changed",
+            "bot_started", "bot_stopped",
+            "bot_added", "bot_removed",
+            "user_added", "user_removed",
+            "chat_title_changed",
+            "dialog_muted", "dialog_unmuted",
+            "dialog_cleared", "dialog_removed",
         ):
             return EventContext(
                 chat_id=event.chat_id,

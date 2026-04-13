@@ -26,15 +26,20 @@ class Router:
 
         # MAX event observers
         self.message = MaxEventObserver(router=self, event_name="message_created")
-        self.message_removed = MaxEventObserver(router=self, event_name="message_removed")
-        self.message_edited = MaxEventObserver(router=self, event_name="message_edited")
         self.message_callback = MaxEventObserver(router=self, event_name="message_callback")
+        self.message_edited = MaxEventObserver(router=self, event_name="message_edited")
+        self.message_removed = MaxEventObserver(router=self, event_name="message_removed")
         self.bot_started = MaxEventObserver(router=self, event_name="bot_started")
+        self.bot_stopped = MaxEventObserver(router=self, event_name="bot_stopped")
         self.bot_added = MaxEventObserver(router=self, event_name="bot_added")
         self.bot_removed = MaxEventObserver(router=self, event_name="bot_removed")
         self.user_added = MaxEventObserver(router=self, event_name="user_added")
         self.user_removed = MaxEventObserver(router=self, event_name="user_removed")
         self.chat_title_changed = MaxEventObserver(router=self, event_name="chat_title_changed")
+        self.dialog_muted = MaxEventObserver(router=self, event_name="dialog_muted")
+        self.dialog_unmuted = MaxEventObserver(router=self, event_name="dialog_unmuted")
+        self.dialog_cleared = MaxEventObserver(router=self, event_name="dialog_cleared")
+        self.dialog_removed = MaxEventObserver(router=self, event_name="dialog_removed")
 
         self.errors = self.error = MaxEventObserver(router=self, event_name="error")
 
@@ -43,15 +48,20 @@ class Router:
 
         self.observers: dict[str, MaxEventObserver] = {
             "message_created": self.message,
-            "message_removed": self.message_removed,
-            "message_edited": self.message_edited,
             "message_callback": self.message_callback,
+            "message_edited": self.message_edited,
+            "message_removed": self.message_removed,
             "bot_started": self.bot_started,
+            "bot_stopped": self.bot_stopped,
             "bot_added": self.bot_added,
             "bot_removed": self.bot_removed,
             "user_added": self.user_added,
             "user_removed": self.user_removed,
             "chat_title_changed": self.chat_title_changed,
+            "dialog_muted": self.dialog_muted,
+            "dialog_unmuted": self.dialog_unmuted,
+            "dialog_cleared": self.dialog_cleared,
+            "dialog_removed": self.dialog_removed,
             "error": self.errors,
         }
 

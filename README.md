@@ -302,6 +302,62 @@ async def code_example(message, bot):
     await message.answer(**content.as_kwargs())
 ```
 
+### Event Handling (all 15 update types)
+
+```python
+from maxgram import Router
+
+router = Router()
+
+# Bot lifecycle
+@router.bot_started()
+async def on_start(event, bot):
+    print(f"{event.user.first_name} started the bot")
+    if event.payload:  # Deep link
+        print(f"Payload: {event.payload}")
+
+@router.bot_stopped()
+async def on_stop(event, bot):
+    print(f"{event.user.first_name} stopped the bot")
+
+# Bot added/removed from chat
+@router.bot_added()
+async def on_bot_added(event, bot):
+    print(f"Bot added to chat {event.chat_id}, is_channel={event.is_channel}")
+
+@router.bot_removed()
+async def on_bot_removed(event, bot):
+    print(f"Bot removed from chat {event.chat_id}")
+
+# User management
+@router.user_added()
+async def on_user_added(event, bot):
+    print(f"{event.user.first_name} joined chat {event.chat_id}")
+
+@router.user_removed()
+async def on_user_removed(event, bot):
+    print(f"{event.user.first_name} left chat {event.chat_id}")
+
+# Message events
+@router.message_edited()
+async def on_edit(message, bot):
+    print(f"Message edited: {message.body.mid}")
+
+@router.message_removed()
+async def on_removed(event, bot):
+    print(f"Message {event.message_id} removed from {event.chat_id}")
+
+# Chat events
+@router.chat_title_changed()
+async def on_title(event, bot):
+    print(f"Chat {event.chat_id} renamed to: {event.title}")
+
+# Dialog events
+@router.dialog_muted()
+async def on_muted(event, bot):
+    print(f"Dialog muted until {event.muted_until}")
+```
+
 ### Multiple Routers
 
 ```python

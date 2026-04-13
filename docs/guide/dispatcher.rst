@@ -22,32 +22,98 @@ Router
 Наблюдатели событий (observers)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Каждый роутер содержит наблюдатели для трёх типов событий MAX API:
+Каждый роутер содержит наблюдатели для всех типов событий MAX API:
+
+**Сообщения:**
 
 .. list-table::
    :header-rows: 1
-   :widths: 30 30 40
+   :widths: 30 25 45
 
-   * - Наблюдатель
-     - Тип события
+   * - Декоратор
+     - ``update_type``
      - Описание
-   * - ``router.message``
+   * - ``@router.message()``
      - ``message_created``
-     - Входящие сообщения
-   * - ``router.message_callback``
+     - Новое сообщение. Event: ``Message``
+   * - ``@router.message_callback()``
      - ``message_callback``
-     - Нажатия inline-кнопок
-   * - ``router.bot_started``
+     - Нажатие inline-кнопки. Event: ``Callback``
+   * - ``@router.message_edited()``
+     - ``message_edited``
+     - Сообщение отредактировано. Event: ``Message``
+   * - ``@router.message_removed()``
+     - ``message_removed``
+     - Сообщение удалено. Event: ``Update``
+
+**Бот:**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 25 45
+
+   * - Декоратор
+     - ``update_type``
+     - Описание
+   * - ``@router.bot_started()``
      - ``bot_started``
-     - Запуск бота пользователем
-   * - ``router.error``
-     - ``error``
-     - Ошибки обработки
+     - Пользователь запустил бота. Event: ``Update``
+   * - ``@router.bot_stopped()``
+     - ``bot_stopped``
+     - Пользователь остановил бота. Event: ``Update``
+   * - ``@router.bot_added()``
+     - ``bot_added``
+     - Бот добавлен в чат. Event: ``Update``
+   * - ``@router.bot_removed()``
+     - ``bot_removed``
+     - Бот удалён из чата. Event: ``Update``
 
-Дополнительные наблюдатели жизненного цикла:
+**Пользователи и чат:**
 
-- ``router.startup`` — событие запуска
-- ``router.shutdown`` — событие остановки
+.. list-table::
+   :header-rows: 1
+   :widths: 30 25 45
+
+   * - Декоратор
+     - ``update_type``
+     - Описание
+   * - ``@router.user_added()``
+     - ``user_added``
+     - Пользователь добавлен в чат. Event: ``Update``
+   * - ``@router.user_removed()``
+     - ``user_removed``
+     - Пользователь удалён из чата. Event: ``Update``
+   * - ``@router.chat_title_changed()``
+     - ``chat_title_changed``
+     - Изменено название чата. Event: ``Update``
+
+**Диалоги:**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 25 45
+
+   * - Декоратор
+     - ``update_type``
+     - Описание
+   * - ``@router.dialog_muted()``
+     - ``dialog_muted``
+     - Уведомления отключены. Event: ``Update``
+   * - ``@router.dialog_unmuted()``
+     - ``dialog_unmuted``
+     - Уведомления включены. Event: ``Update``
+   * - ``@router.dialog_cleared()``
+     - ``dialog_cleared``
+     - Диалог очищен. Event: ``Update``
+   * - ``@router.dialog_removed()``
+     - ``dialog_removed``
+     - Диалог удалён. Event: ``Update``
+
+**Ошибки и жизненный цикл:**
+
+- ``@router.error()`` — ошибки обработки
+- ``@router.startup()`` — событие запуска
+- ``@router.shutdown()`` — событие остановки
 
 Регистрация обработчиков
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -64,9 +130,30 @@ Router
    async def handle_callback(callback, bot):
        await callback.answer(notification="Clicked!")
 
+   @router.message_edited()
+   async def handle_edit(message, bot):
+       print(f"Message edited: {message.body.mid}")
+
    @router.bot_started()
    async def handle_start(event, bot):
-       pass
+       # event — это Update с полями: user, chat_id, payload
+       if event.user:
+           print(f"{event.user.first_name} started the bot")
+
+   @router.bot_added()
+   async def handle_bot_added(event, bot):
+       # event.chat_id, event.user, event.is_channel
+       print(f"Bot added to chat {event.chat_id}")
+
+   @router.user_added()
+   async def handle_user_added(event, bot):
+       # event.chat_id, event.user, event.inviter_id, event.is_channel
+       print(f"User {event.user.first_name} added to chat")
+
+   @router.message_removed()
+   async def handle_removed(event, bot):
+       # event.message_id, event.chat_id, event.user_id
+       print(f"Message {event.message_id} removed")
 
    @router.error()
    async def handle_error(error, bot):
