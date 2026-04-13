@@ -31,6 +31,7 @@ from .image import Image
 from .inline_keyboard import InlineKeyboard
 from .input_file import BufferedInputFile, FSInputFile, InputFile, URLInputFile
 from .linked_message import LinkedMessage
+from .markup import MarkupElement
 from .message import Message
 from .message_body import MessageBody
 from .message_stat import MessageStat
@@ -103,6 +104,7 @@ __all__ = [
     "InputFile",
     "LinkedMessage",
     "LocationAttachment",
+    "MarkupElement",
     "MaxObject",
     "Message",
     "MessageBody",

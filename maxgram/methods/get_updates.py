@@ -10,6 +10,7 @@ class GetUpdates(MaxMethod[list[Update]]):
     """GET /updates - Get updates via long polling."""
 
     __returning__: ClassVar[type] = list
+    __item_type__: ClassVar[type] = Update
     __http_method__: ClassVar[str] = "GET"
     __api_path__: ClassVar[str] = "/updates"
 

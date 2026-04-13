@@ -97,10 +97,76 @@ MessageBody
 .. code-block:: python
 
    class MessageBody(MaxObject):
-       mid: str                                # ID сообщения
-       seq: int = 0                            # Порядковый номер
-       text: str | None = None                 # Текст
-       attachments: list[Attachment] | None = None  # Вложения
+       mid: str                                      # ID сообщения
+       seq: int = 0                                  # Порядковый номер
+       text: str | None = None                       # Текст
+       attachments: list[Attachment] | None = None    # Вложения
+       markup: list[MarkupElement] | None = None      # Разметка текста
+
+MarkupElement
+^^^^^^^^^^^^^
+
+.. module:: maxgram.types.markup
+
+Элемент разметки текста. MAX API возвращает разметку в виде массива элементов
+с позицией и длиной.
+
+.. code-block:: python
+
+   from pydantic import Field
+
+   class MarkupElement(MaxObject):
+       type: str                          # Тип разметки
+       from_pos: int = Field(alias="from")  # Начало в тексте (0-based)
+       length: int                        # Длина
+       url: str | None = None             # Только для link
+       user_link: str | None = None       # Только для user_mention (@username)
+       user_id: int | None = None         # Только для user_mention (ID)
+
+Типы разметки (``MarkupType``):
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 30 45
+
+   * - Тип
+     - Enum
+     - Описание
+   * - ``strong``
+     - ``MarkupType.STRONG``
+     - Жирный
+   * - ``emphasized``
+     - ``MarkupType.EMPHASIZED``
+     - Курсив
+   * - ``monospaced``
+     - ``MarkupType.MONOSPACED``
+     - Моноширинный
+   * - ``link``
+     - ``MarkupType.LINK``
+     - Ссылка (+ поле ``url``)
+   * - ``strikethrough``
+     - ``MarkupType.STRIKETHROUGH``
+     - Зачёркнутый
+   * - ``underline``
+     - ``MarkupType.UNDERLINE``
+     - Подчёркнутый
+   * - ``user_mention``
+     - ``MarkupType.USER_MENTION``
+     - Упоминание (+ ``user_id``, ``user_link``)
+
+Пример:
+
+.. code-block:: python
+
+   @router.message()
+   async def handler(message: Message, bot):
+       if message.body.markup:
+           for el in message.body.markup:
+               print(f"{el.type}: pos={el.from_pos}, len={el.length}")
+               if el.type == "link":
+                   print(f"  url: {el.url}")
+               if el.type == "user_mention":
+                   print(f"  user: {el.user_id} ({el.user_link})")
 
 MessageStat
 -----------
@@ -171,6 +237,7 @@ NewMessageLink
 
 - ``maxgram/types/message.py``
 - ``maxgram/types/message_body.py``
+- ``maxgram/types/markup.py``
 - ``maxgram/types/message_stat.py``
 - ``maxgram/types/linked_message.py``
 - ``maxgram/types/recipient.py``

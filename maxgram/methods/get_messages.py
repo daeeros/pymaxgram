@@ -10,6 +10,7 @@ class GetMessages(MaxMethod[list[Message]]):
     """GET /messages - Get messages from chat or by IDs."""
 
     __returning__: ClassVar[type] = list
+    __item_type__: ClassVar[type] = Message
     __http_method__: ClassVar[str] = "GET"
     __api_path__: ClassVar[str] = "/messages"
 

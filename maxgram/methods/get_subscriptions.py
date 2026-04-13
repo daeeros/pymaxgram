@@ -10,5 +10,6 @@ class GetSubscriptions(MaxMethod[list[Subscription]]):
     """GET /subscriptions - List webhook subscriptions."""
 
     __returning__: ClassVar[type] = list
+    __item_type__: ClassVar[type] = Subscription
     __http_method__: ClassVar[str] = "GET"
     __api_path__: ClassVar[str] = "/subscriptions"

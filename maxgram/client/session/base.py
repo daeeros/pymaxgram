@@ -83,17 +83,26 @@ class BaseSession(abc.ABC):
             returning_type = method.__returning__
             try:
                 if returning_type is list:
-                    # List responses: look for known keys
+                    item_type = getattr(method, "__item_type__", None)
+                    raw_list = json_data
                     if isinstance(json_data, dict):
-                        # Try common list keys: messages, chats, members, updates, subscriptions
+                        # Extract marker for pagination if present
+                        if hasattr(method, "marker") and "marker" in json_data:
+                            method.marker = json_data["marker"]
                         for key in ("messages", "chats", "members", "updates", "subscriptions"):
                             if key in json_data:
-                                return json_data[key]
-                        # If has "message" key and it's a dict, it's a single message response
-                        if "message" in json_data and isinstance(json_data["message"], dict):
-                            return json_data["message"]
-                        return json_data
-                    return json_data
+                                raw_list = json_data[key]
+                                break
+                        else:
+                            if "message" in json_data and isinstance(json_data["message"], dict):
+                                raw_list = json_data["message"]
+                    if item_type and isinstance(raw_list, list):
+                        return [
+                            item_type.model_validate(item, context={"bot": bot})
+                            if isinstance(item, dict) else item
+                            for item in raw_list
+                        ]
+                    return raw_list
                 else:
                     # Single object responses
                     if isinstance(json_data, dict):

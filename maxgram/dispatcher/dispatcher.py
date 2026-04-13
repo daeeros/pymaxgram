@@ -238,8 +238,6 @@ class Dispatcher(Router):
                 backoff.reset()
                 failed = False
 
-            # result is the raw response from check_response
-            # For MAX API, updates come as a list
             updates = result if isinstance(result, list) else []
 
             for update in updates:
@@ -247,12 +245,7 @@ class Dispatcher(Router):
                     update = Update.model_validate(update, context={"bot": bot})
                 yield update
 
-            # Update marker for next request if we got updates
-            # The MAX API response has a marker field for pagination
-            # We handle this by checking the raw response
-            if updates:
-                # Use the last update's timestamp or a marker from the response
-                get_updates.marker = None  # Will be set from response if available
+            # marker is updated automatically by check_response via method.marker
 
     async def _listen_update(self, update: Update, **kwargs: Any) -> Any:
         try:

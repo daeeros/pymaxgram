@@ -93,6 +93,20 @@ ContentType
        SHARE = "share"
        INLINE_KEYBOARD = "inline_keyboard"
 
+MarkupType
+----------
+
+.. code-block:: python
+
+   class MarkupType(str, Enum):
+       STRONG = "strong"
+       EMPHASIZED = "emphasized"
+       MONOSPACED = "monospaced"
+       LINK = "link"
+       STRIKETHROUGH = "strikethrough"
+       UNDERLINE = "underline"
+       USER_MENTION = "user_mention"
+
 ParseMode
 ---------
 

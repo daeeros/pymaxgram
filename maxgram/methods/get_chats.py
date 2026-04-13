@@ -15,6 +15,7 @@ class GetChats(MaxMethod[list[Chat]]):
     """GET /chats - List all group chats."""
 
     __returning__: ClassVar[type] = list
+    __item_type__: ClassVar[type] = Chat
     __http_method__: ClassVar[str] = "GET"
     __api_path__: ClassVar[str] = "/chats"
 
