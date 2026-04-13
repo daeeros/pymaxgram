@@ -52,6 +52,62 @@ User
      - ``str | None``
      - Полное имя (deprecated)
 
+Свойства
+^^^^^^^^
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 20 55
+
+   * - Свойство
+     - Тип
+     - Описание
+   * - ``full_name``
+     - ``str``
+     - ``"First Last"`` или ``"First"`` если нет фамилии
+   * - ``mention_html``
+     - ``str``
+     - ``<a href="max://user/123">First Last</a>``
+   * - ``mention_md``
+     - ``str``
+     - ``[First Last](max://user/123)``
+
+Методы
+^^^^^^
+
+.. list-table::
+   :header-rows: 1
+   :widths: 45 55
+
+   * - Метод
+     - Описание
+   * - ``await get_profile_photo(chat_id, full_size=True)``
+     - Скачать аватарку. Возвращает ``bytes | None``
+   * - ``await get_profile_photo_url(chat_id, full_size=True)``
+     - Получить URL аватарки. Возвращает ``str | None``
+
+.. code-block:: python
+
+   user = message.sender
+   chat_id = message.recipient.chat_id
+
+   user.full_name       # "Michael Smith"
+   user.mention_html    # '<a href="max://user/123">Michael Smith</a>'
+
+   await message.answer(text=f"Hello, {user.mention_html}!")
+
+   # Скачать аватарку (bytes)
+   photo = await user.get_profile_photo(chat_id=chat_id)
+   if photo:
+       with open("avatar.jpg", "wb") as f:
+           f.write(photo)
+
+   # Только URL без скачивания
+   url = await user.get_profile_photo_url(chat_id=chat_id)
+
+   # Миниатюра
+   thumb = await user.get_profile_photo(chat_id=chat_id, full_size=False)
+
 UserWithPhoto
 -------------
 
