@@ -8,7 +8,6 @@
 
 - ``Filter`` — базовый класс
 - ``Command`` — фильтр текстовых команд
-- ``CommandStart`` — фильтр ``bot_started``
 - ``CommandObject`` — результат парсинга команды
 - ``CallbackData`` — структурированные callback данные
 - ``StateFilter`` — фильтр FSM-состояния

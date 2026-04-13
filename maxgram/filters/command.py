@@ -7,8 +7,7 @@ from re import Match, Pattern
 from typing import TYPE_CHECKING, Any, cast
 
 from maxgram.filters.base import Filter
-from maxgram.types import BotCommand, Message, Update
-from maxgram.utils.payload import decode_payload
+from maxgram.types import BotCommand, Message
 
 if TYPE_CHECKING:
     from magic_filter import MagicFilter
@@ -191,63 +190,3 @@ class CommandObject:
         return line
 
 
-class CommandStart(Filter):
-    """
-    Filter for bot_started updates from MAX.
-
-    In MAX, when a user starts a bot (including via deep link),
-    the bot receives a bot_started update with an optional payload field.
-
-    Usage::
-
-        @router.bot_started(CommandStart())
-        async def on_start(update, bot):
-            ...
-
-        @router.bot_started(CommandStart(deep_link=True))
-        async def on_deep_link(update, bot):
-            payload = update.payload  # e.g. "promo_summer2025"
-
-        @router.bot_started(CommandStart(deep_link=True, deep_link_encoded=True))
-        async def on_encoded_deep_link(update, bot):
-            payload = update.payload  # decoded from base64
-    """
-
-    def __init__(
-        self,
-        deep_link: bool | None = None,
-        deep_link_encoded: bool = False,
-    ):
-        self.deep_link = deep_link
-        self.deep_link_encoded = deep_link_encoded
-
-    def __str__(self) -> str:
-        return self._signature_to_string(
-            deep_link=self.deep_link,
-            deep_link_encoded=self.deep_link_encoded,
-        )
-
-    async def __call__(self, event: Any, **kwargs: Any) -> bool | dict[str, Any]:
-        if not isinstance(event, Update):
-            return False
-        if event.update_type != "bot_started":
-            return False
-
-        payload = event.payload
-
-        if self.deep_link is None:
-            return True
-        if self.deep_link is False:
-            if payload:
-                return False
-            return True
-        # deep_link=True: payload is required
-        if not payload:
-            return False
-        if self.deep_link_encoded:
-            try:
-                payload = decode_payload(payload)
-            except (UnicodeDecodeError, Exception):
-                return False
-            return {"deep_link": payload}
-        return {"deep_link": payload}

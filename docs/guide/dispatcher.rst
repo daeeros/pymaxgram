@@ -147,7 +147,8 @@ Router
    async def handle_start(event: BotStarted, bot):
        print(f"{event.user.first_name} started the bot")
        if event.payload:
-           print(f"Deep link: {event.payload}")
+           print(f"Raw payload: {event.payload}")
+           print(f"Decoded: {event.deep_link()}")  # base64url decode
 
    @router.bot_added()
    async def handle_bot_added(event: BotAdded, bot):

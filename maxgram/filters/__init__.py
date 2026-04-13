@@ -1,6 +1,6 @@
 from .base import Filter
 from .callback_data import CallbackData, CallbackDataFilter
-from .command import Command, CommandObject, CommandStart
+from .command import Command, CommandObject
 from .exception import ExceptionMessageFilter, ExceptionTypeFilter
 from .logic import and_f, invert_f, or_f
 from .magic_data import MagicData
@@ -14,7 +14,6 @@ __all__ = (
     "CallbackDataFilter",
     "Command",
     "CommandObject",
-    "CommandStart",
     "ExceptionMessageFilter",
     "ExceptionTypeFilter",
     "Filter",

@@ -5,16 +5,56 @@ to fields specific to each event type. Used as type hints in handlers.
 """
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from .update import Update
 from .user import User
 
 
 class BotStarted(Update):
-    """bot_started: user started the bot."""
+    """bot_started: user started the bot.
+
+    Deep link payload available in `event.payload`.
+    Use `event.deep_link()` to decode base64-encoded payload.
+    """
     chat_id: int
     user: User
     payload: str | None = None
     user_locale: str | None = None
+
+    def deep_link(self, *, decoder: Callable[[bytes], bytes] | None = None) -> str | None:
+        """Decode deep link payload.
+
+        Returns decoded payload string, or None if no payload.
+
+        Args:
+            decoder: Optional custom decoder (e.g. AES decryptor).
+                     Without it, decodes base64url.
+
+        Usage::
+
+            # Plain deep link
+            @router.bot_started(F.payload)
+            async def on_start(event: BotStarted):
+                link_name = event.payload  # raw payload string
+
+            # Base64-encoded deep link
+            @router.bot_started(F.payload)
+            async def on_start(event: BotStarted):
+                decoded = event.deep_link()  # base64url decoded
+
+            # Custom encryption
+            @router.bot_started(F.payload)
+            async def on_start(event: BotStarted):
+                decoded = event.deep_link(decoder=my_cryptor.decrypt)
+        """
+        if not self.payload:
+            return None
+        from ..utils.payload import decode_payload
+        try:
+            return decode_payload(self.payload, decoder=decoder)
+        except Exception:
+            return self.payload
 
 
 class BotStopped(Update):

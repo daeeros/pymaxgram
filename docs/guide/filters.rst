@@ -117,30 +117,6 @@ CommandObject
      - ``Any``
      - Результат magic-filter
 
-CommandStart
-------------
-
-Фильтр для события ``bot_started`` (когда пользователь запускает бота):
-
-.. code-block:: python
-
-   from maxgram.filters import CommandStart
-
-   @router.message(CommandStart())
-   async def start(message, bot):
-       await message.answer(text="Welcome!")
-
-   # С поддержкой deep link
-   @router.message(CommandStart(deep_link=True))
-   async def start_with_link(message, command: CommandObject, bot):
-       if command.args:
-           print(f"Deep link payload: {command.args}")
-
-Параметры:
-
-- **deep_link** (``bool``) — разрешить deep link (``False``)
-- **deep_link_encoded** (``bool``) — декодировать Base64 payload (``False``)
-
 CallbackData
 ------------
 

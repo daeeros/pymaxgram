@@ -64,16 +64,19 @@
 
    import asyncio
    from maxgram import Bot, Dispatcher, Router
-   from maxgram.filters import Command, CommandStart
+   from maxgram.filters import Command
+   from maxgram.types import BotStarted
 
    bot = Bot(token="YOUR_BOT_TOKEN")
    dp = Dispatcher()
    router = Router()
 
-   @router.message(CommandStart())
-   async def start(message, bot):
-       name = message.sender.first_name
-       await message.answer(text=f"Привет, {name}! Я эхо-бот.")
+   @router.bot_started()
+   async def start(event: BotStarted, bot):
+       await bot.send_message(
+           user_id=event.user.user_id,
+           text=f"Привет, {event.user.first_name}! Я эхо-бот.",
+       )
 
    @router.message(Command("help"))
    async def help_cmd(message, bot):

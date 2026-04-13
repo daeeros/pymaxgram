@@ -152,19 +152,58 @@ Update
 - ``dialog_cleared`` → ``DialogCleared``
 - ``dialog_removed`` → ``DialogRemoved``
 
+BotStarted и Deep Links
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+``BotStarted`` имеет метод ``deep_link()`` для декодирования payload:
+
+.. code-block:: python
+
+   from maxgram.types import BotStarted
+
+   event.payload       # Сырая строка как пришла от MAX API
+   event.deep_link()   # Декодированная из base64url
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - Метод
+     - Описание
+   * - ``event.payload``
+     - Сырой payload (строка)
+   * - ``event.deep_link()``
+     - Декодировать base64url
+   * - ``event.deep_link(decoder=fn)``
+     - Кастомная расшифровка (AES и т.д.)
+
+Создание deep link:
+
+.. code-block:: python
+
+   from maxgram.utils.payload import encode_payload
+
+   link = encode_payload("secret_data")  # "c2VjcmV0X2RhdGE"
+   # URL: https://max.ru/your_bot?start=c2VjcmV0X2RhdGE
+
 Примеры
 -------
 
 .. code-block:: python
 
+   from maxgram import F
    from maxgram.types import BotStarted, UserAdded, MessageRemoved, BotAdded
 
+   # Deep link
+   @router.bot_started(F.payload)
+   async def on_deep_link(event: BotStarted, bot):
+       decoded = event.deep_link()
+       await bot.send_message(user_id=event.user.user_id, text=f"Ref: {decoded}")
+
+   # Regular start (no payload)
    @router.bot_started()
    async def on_start(event: BotStarted, bot):
-       print(f"{event.user.first_name} started bot")
-       print(f"Chat: {event.chat_id}")
-       if event.payload:
-           print(f"Deep link: {event.payload}")
+       await bot.send_message(user_id=event.user.user_id, text="Welcome!")
 
    @router.bot_added()
    async def on_bot_added(event: BotAdded, bot):

@@ -1,6 +1,6 @@
-====================
-Command и CommandStart
-====================
+==========
+Command
+==========
 
 .. module:: maxgram.filters.command
 
@@ -62,26 +62,6 @@ CommandObject
        args: str | None = None
        regexp_match: re.Match | None = None
        magic_result: Any = None
-
-CommandStart
-------------
-
-Фильтр для события ``bot_started`` с поддержкой deep link.
-
-.. code-block:: python
-
-   class CommandStart(Filter):
-       def __init__(
-           self,
-           deep_link: bool = False,
-           deep_link_encoded: bool = False,
-           magic: MagicFilter | None = None,
-       ) -> None: ...
-
-- ``deep_link=True`` — разбирает payload из ``update.payload``
-- ``deep_link_encoded=True`` — декодирует Base64 payload
-
-При совпадении инъектирует ``command: CommandObject`` с ``args=payload``.
 
 Исходный файл
 --------------

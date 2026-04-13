@@ -37,15 +37,15 @@ asyncio.run(dp.start_polling(bot))
 ### Command Handling
 
 ```python
-from maxgram.filters import Command, CommandStart, CommandObject
+from maxgram.filters import Command, CommandObject
+from maxgram.types import BotStarted
 
 router = Router()
 
 
-@router.message(CommandStart())
-async def start_handler(message, bot):
-    name = message.sender.first_name
-    await message.answer(text=f"Welcome, {name}!")
+@router.bot_started()
+async def start_handler(event: BotStarted, bot):
+    await bot.send_message(user_id=event.user.user_id, text=f"Welcome, {event.user.first_name}!")
 
 
 @router.message(Command("help"))
@@ -321,8 +321,9 @@ router = Router()
 @router.bot_started()
 async def on_start(event: BotStarted, bot):
     print(f"{event.user.first_name} started the bot")
-    if event.payload:  # Deep link
-        print(f"Payload: {event.payload}")
+    if event.payload:
+        print(f"Raw payload: {event.payload}")
+        print(f"Decoded deep link: {event.deep_link()}")
 
 @router.bot_stopped()
 async def on_stop(event: BotStopped, bot):
@@ -366,6 +367,48 @@ async def on_title(event: ChatTitleChanged, bot):
 @router.dialog_muted()
 async def on_muted(event: DialogMuted, bot):
     print(f"Dialog muted until {event.muted_until}")
+```
+
+### Deep Links
+
+```python
+from maxgram import F, Router
+from maxgram.types import BotStarted
+from maxgram.utils.payload import encode_payload, decode_payload
+
+router = Router()
+
+# --- Creating deep links ---
+# Plain: https://max.ru/your_bot?start=promo_summer
+# Encoded: https://max.ru/your_bot?start=c2VjcmV0X2RhdGE
+encoded = encode_payload("secret_data")  # "c2VjcmV0X2RhdGE"
+
+# --- Handling deep links ---
+
+# Only with payload (F.payload filters out empty starts)
+@router.bot_started(F.payload)
+async def on_deep_link(event: BotStarted, bot):
+    # Raw payload as-is from URL
+    raw = event.payload  # "c2VjcmV0X2RhdGE"
+
+    # Decode base64url
+    decoded = event.deep_link()  # "secret_data"
+
+    # With custom decryption (e.g. AES)
+    # decoded = event.deep_link(decoder=my_cryptor.decrypt)
+
+    await bot.send_message(
+        user_id=event.user.user_id,
+        text=f"Welcome! Ref: {decoded}",
+    )
+
+# Without payload — regular start
+@router.bot_started()
+async def on_start(event: BotStarted, bot):
+    await bot.send_message(
+        user_id=event.user.user_id,
+        text="Welcome!",
+    )
 ```
 
 ### Multiple Routers
@@ -500,7 +543,8 @@ import logging
 from maxgram import Bot, Dispatcher, F, Router
 from maxgram.client.default import DefaultBotProperties
 from maxgram.enums import ParseMode
-from maxgram.filters import Command, CommandStart, StateFilter, CallbackData
+from maxgram.filters import Command, StateFilter, CallbackData
+from maxgram.types import BotStarted
 from maxgram.fsm.state import State, StatesGroup
 from maxgram.fsm.context import FSMContext
 from maxgram.utils.keyboard import InlineKeyboardBuilder
@@ -532,9 +576,9 @@ class ConfirmCallback(CallbackData, prefix="confirm"):
 
 
 # --- Handlers ---
-@router.message(CommandStart())
-async def cmd_start(message, bot):
-    await message.answer(text="Welcome! Use /order to make an order.")
+@router.bot_started()
+async def cmd_start(event: BotStarted, bot):
+    await bot.send_message(user_id=event.user.user_id, text="Welcome! Use /order to make an order.")
 
 
 @router.message(Command("order"))
