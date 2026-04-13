@@ -145,47 +145,21 @@ class Dispatcher(Router):
 
     @staticmethod
     def _debug_update(update: Update) -> None:
-        parts = [f"\n{'='*60}", f"UPDATE {update.update_type}"]
-        if update.update_type in ("message_created", "message_edited") and update.message:
-            msg = update.message
-            user = msg.sender
-            text = msg.body.text if msg.body else None
-            parts.append(f"  from: {user.first_name} (id={user.user_id})" if user else "  from: unknown")
-            parts.append(f"  chat: {msg.recipient.chat_id} ({msg.recipient.chat_type})")
-            if text:
-                parts.append(f"  text: {text!r}")
-            if msg.body and msg.body.attachments:
-                parts.append(f"  attachments: {[a.type for a in msg.body.attachments]}")
-        elif update.update_type == "message_callback" and update.callback:
-            cb = update.callback
-            parts.append(f"  from: {cb.user.first_name} (id={cb.user.user_id})")
-            parts.append(f"  payload: {cb.payload!r}")
-            parts.append(f"  callback_id: {cb.callback_id[:20]}...")
-            if cb.message:
-                parts.append(f"  message_mid: {cb.message.body.mid}")
-        else:
-            if update.user:
-                parts.append(f"  user: {update.user.first_name} (id={update.user.user_id})")
-            if update.chat_id:
-                parts.append(f"  chat: {update.chat_id}")
-            if update.user_id:
-                parts.append(f"  user_id: {update.user_id}")
-            if update.message_id:
-                parts.append(f"  message_id: {update.message_id}")
-            if update.payload:
-                parts.append(f"  payload: {update.payload!r}")
-            if update.title:
-                parts.append(f"  title: {update.title!r}")
-            if update.is_channel is not None:
-                parts.append(f"  is_channel: {update.is_channel}")
-            if update.inviter_id:
-                parts.append(f"  inviter_id: {update.inviter_id}")
-            if update.admin_id:
-                parts.append(f"  admin_id: {update.admin_id}")
-            if update.muted_until:
-                parts.append(f"  muted_until: {update.muted_until}")
-        parts.append("="*60)
-        loggers.event.info("\n".join(parts))
+        import json
+
+        try:
+            raw = update.model_dump(mode="json", exclude_none=True)
+            formatted = json.dumps(raw, indent=2, ensure_ascii=False)
+        except Exception:
+            formatted = repr(update)
+
+        loggers.event.info(
+            "\n%s\n  UPDATE %s\n%s\n%s",
+            "=" * 60,
+            update.update_type,
+            formatted,
+            "=" * 60,
+        )
 
     @staticmethod
     def _debug_result(update: Update, handled: bool, duration: float) -> None:
