@@ -44,8 +44,8 @@ router = Router()
 
 
 @router.bot_started()
-async def start_handler(event: BotStarted, bot):
-    await bot.send_message(user_id=event.user.user_id, text=f"Welcome, {event.user.first_name}!")
+async def start_handler(event: BotStarted):
+    await event.answer(text=f"Welcome, {event.user.first_name}!")
 
 
 @router.message(Command("help"))
@@ -387,7 +387,7 @@ encoded = encode_payload("secret_data")  # "c2VjcmV0X2RhdGE"
 
 # Only with payload (F.payload filters out empty starts)
 @router.bot_started(F.payload)
-async def on_deep_link(event: BotStarted, bot):
+async def on_deep_link(event: BotStarted):
     # Raw payload as-is from URL
     raw = event.payload  # "c2VjcmV0X2RhdGE"
 
@@ -397,18 +397,12 @@ async def on_deep_link(event: BotStarted, bot):
     # With custom decryption (e.g. AES)
     # decoded = event.deep_link(decoder=my_cryptor.decrypt)
 
-    await bot.send_message(
-        user_id=event.user.user_id,
-        text=f"Welcome! Ref: {decoded}",
-    )
+    await event.answer(text=f"Welcome! Ref: {decoded}")
 
 # Without payload — regular start
 @router.bot_started()
-async def on_start(event: BotStarted, bot):
-    await bot.send_message(
-        user_id=event.user.user_id,
-        text="Welcome!",
-    )
+async def on_start(event: BotStarted):
+    await event.answer(text="Welcome!")
 ```
 
 ### Multiple Routers
@@ -577,8 +571,8 @@ class ConfirmCallback(CallbackData, prefix="confirm"):
 
 # --- Handlers ---
 @router.bot_started()
-async def cmd_start(event: BotStarted, bot):
-    await bot.send_message(user_id=event.user.user_id, text="Welcome! Use /order to make an order.")
+async def cmd_start(event: BotStarted):
+    await event.answer(text="Welcome! Use /order to make an order.")
 
 
 @router.message(Command("order"))

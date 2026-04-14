@@ -89,6 +89,39 @@ class Update(MaxObject):
             f"Unknown or unsupported update type: {self.update_type}"
         )
 
+    async def answer(
+        self,
+        text: str | None = None,
+        attachments: list[Any] | None = None,
+        notify: bool | None = None,
+        format: str | None = None,
+        disable_link_preview: bool | None = None,
+        keyboard: Any | None = None,
+        **kwargs: Any,
+    ) -> Any:
+        """Send a message to the chat where this event occurred."""
+        from ..methods.send_message import SendMessage
+        from ..utils.keyboard import prepare_keyboard
+
+        bot = self.bot
+        if format is None and bot.default.parse_mode:
+            format = bot.default.parse_mode
+        if notify is None and bot.default.notify is not None:
+            notify = bot.default.notify
+        if disable_link_preview is None and bot.default.disable_link_preview is not None:
+            disable_link_preview = bot.default.disable_link_preview
+        attachments = prepare_keyboard(attachments, keyboard)
+
+        return await SendMessage(
+            chat_id=self.chat_id,
+            text=text,
+            attachments=attachments,
+            notify=notify,
+            format=format,
+            disable_link_preview=disable_link_preview,
+            **kwargs,
+        ).as_(bot)
+
     def _as_typed_event(self, cls: type) -> Any:
         """Convert this Update to a typed event subclass."""
         data = self.model_dump()

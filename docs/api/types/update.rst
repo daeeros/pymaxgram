@@ -196,14 +196,14 @@ BotStarted и Deep Links
 
    # Deep link
    @router.bot_started(F.payload)
-   async def on_deep_link(event: BotStarted, bot):
+   async def on_deep_link(event: BotStarted):
        decoded = event.deep_link()
-       await bot.send_message(user_id=event.user.user_id, text=f"Ref: {decoded}")
+       await event.answer(text=f"Ref: {decoded}")
 
    # Regular start (no payload)
    @router.bot_started()
-   async def on_start(event: BotStarted, bot):
-       await bot.send_message(user_id=event.user.user_id, text="Welcome!")
+   async def on_start(event: BotStarted):
+       await event.answer(text="Welcome!")
 
    @router.bot_added()
    async def on_bot_added(event: BotAdded, bot):

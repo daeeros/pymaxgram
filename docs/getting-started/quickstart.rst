@@ -72,11 +72,8 @@
    router = Router()
 
    @router.bot_started()
-   async def start(event: BotStarted, bot):
-       await bot.send_message(
-           user_id=event.user.user_id,
-           text=f"Привет, {event.user.first_name}! Я эхо-бот.",
-       )
+   async def start(event: BotStarted):
+       await event.answer(text=f"Привет, {event.user.first_name}! Я эхо-бот.")
 
    @router.message(Command("help"))
    async def help_cmd(message, bot):
