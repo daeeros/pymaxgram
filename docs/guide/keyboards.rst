@@ -146,9 +146,6 @@ InlineKeyboardBuilder
      - Отправляет текст кнопки как сообщение от пользователя
    * - ``clipboard(text, payload)``
      - Копирует ``payload`` в буфер обмена
-   * - ``button(text, type?, payload?, url?, callback_data?)``
-     - Универсальный метод (для обратной совместимости)
-
 Методы компоновки:
 
 .. list-table::

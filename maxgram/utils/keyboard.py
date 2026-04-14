@@ -49,24 +49,6 @@ class InlineKeyboardBuilder:
         self._markup[-1].append(btn)
         return self
 
-    def button(
-        self,
-        text: str,
-        type: str = "callback",
-        payload: str | None = None,
-        url: str | None = None,
-        callback_data: CallbackData | None = None,
-    ) -> InlineKeyboardBuilder:
-        """Add a button to the current row."""
-        if callback_data is not None:
-            type = "callback"
-            if isinstance(callback_data, str):
-                payload = callback_data
-            else:
-                payload = callback_data.pack()
-
-        return self._append(Button(type=type, text=text, payload=payload, url=url))
-
     def callback(
         self,
         text: str,
