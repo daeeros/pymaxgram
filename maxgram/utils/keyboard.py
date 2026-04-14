@@ -7,6 +7,15 @@ from typing import TYPE_CHECKING, Any
 from maxgram.filters.callback_data import CallbackData
 from maxgram.types import Button
 from maxgram.types.attachment_request import InlineKeyboardAttachmentRequest
+from maxgram.types.button import (
+    CallbackButton,
+    ClipboardButton,
+    LinkButton,
+    MessageButton,
+    OpenAppButton,
+    RequestContactButton,
+    RequestGeoLocationButton,
+)
 from maxgram.types.inline_keyboard import InlineKeyboard
 
 if TYPE_CHECKING:
@@ -34,13 +43,18 @@ class InlineKeyboardBuilder:
     def buttons(self) -> Generator[Button, None, None]:
         yield from chain.from_iterable(self._markup)
 
+    def _append(self, btn: Button) -> InlineKeyboardBuilder:
+        if not self._markup:
+            self._markup.append([])
+        self._markup[-1].append(btn)
+        return self
+
     def button(
         self,
         text: str,
         type: str = "callback",
         payload: str | None = None,
         url: str | None = None,
-        intent: str | None = None,
         callback_data: CallbackData | None = None,
     ) -> InlineKeyboardBuilder:
         """Add a button to the current row."""
@@ -51,18 +65,60 @@ class InlineKeyboardBuilder:
             else:
                 payload = callback_data.pack()
 
-        btn = Button(
-            type=type,
-            text=text,
-            payload=payload,
-            url=url,
-            intent=intent,
+        return self._append(Button(type=type, text=text, payload=payload, url=url))
+
+    def callback(
+        self,
+        text: str,
+        payload: str | None = None,
+        *,
+        callback_data: CallbackData | None = None,
+    ) -> InlineKeyboardBuilder:
+        """Add a callback button."""
+        if callback_data is not None:
+            if isinstance(callback_data, str):
+                payload = callback_data
+            else:
+                payload = callback_data.pack()
+        return self._append(CallbackButton(text=text, payload=payload))
+
+    def link(self, text: str, url: str) -> InlineKeyboardBuilder:
+        """Add a link button."""
+        return self._append(LinkButton(text=text, url=url))
+
+    def request_contact(self, text: str) -> InlineKeyboardBuilder:
+        """Add a request contact button."""
+        return self._append(RequestContactButton(text=text))
+
+    def request_geo_location(
+        self,
+        text: str,
+        *,
+        quick: bool | None = None,
+    ) -> InlineKeyboardBuilder:
+        """Add a request geo location button."""
+        return self._append(RequestGeoLocationButton(text=text, quick=quick))
+
+    def open_app(
+        self,
+        text: str,
+        *,
+        web_app: str | None = None,
+        contact_id: int | None = None,
+        payload: str | None = None,
+    ) -> InlineKeyboardBuilder:
+        """Add an open app button."""
+        return self._append(
+            OpenAppButton(text=text, web_app=web_app, contact_id=contact_id, payload=payload),
         )
 
-        if not self._markup:
-            self._markup.append([])
-        self._markup[-1].append(btn)
-        return self
+    def message(self, text: str) -> InlineKeyboardBuilder:
+        """Add a message button."""
+        return self._append(MessageButton(text=text))
+
+    def clipboard(self, text: str, payload: str) -> InlineKeyboardBuilder:
+        """Add a clipboard button."""
+        return self._append(ClipboardButton(text=text, payload=payload))
 
     def row(self, *buttons: Button) -> InlineKeyboardBuilder:
         """Add a new row with optional buttons."""

@@ -13,17 +13,41 @@ InlineKeyboardBuilder
        MAX_ROWS = 30        # Макс. рядов
        MAX_BUTTONS = 210    # Макс. кнопок всего
 
-Методы
-------
+Методы для добавления кнопок
+-----------------------------
 
 .. list-table::
    :header-rows: 1
-   :widths: 40 60
+   :widths: 45 55
 
    * - Метод
      - Описание
+   * - ``callback(text, payload?, *, callback_data?)``
+     - Callback-кнопка. Отправляет событие ``message_callback``
+   * - ``link(text, url)``
+     - Открывает ссылку в новой вкладке
+   * - ``request_contact(text)``
+     - Запрашивает контакт пользователя
+   * - ``request_geo_location(text, *, quick?)``
+     - Запрашивает геолокацию. ``quick=True`` — без подтверждения
+   * - ``open_app(text, *, web_app?, contact_id?, payload?)``
+     - Открывает мини-приложение
+   * - ``message(text)``
+     - Отправляет текст кнопки как сообщение от пользователя
+   * - ``clipboard(text, payload)``
+     - Копирует ``payload`` в буфер обмена
    * - ``button(text, type?, payload?, url?, callback_data?)``
-     - Добавить кнопку
+     - Универсальный метод (для обратной совместимости)
+
+Методы компоновки
+------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 45 55
+
+   * - Метод
+     - Описание
    * - ``row(*buttons)``
      - Начать новый ряд
    * - ``adjust(*sizes: int)``
@@ -43,10 +67,10 @@ InlineKeyboardBuilder
    from maxgram.utils.keyboard import InlineKeyboardBuilder
 
    builder = InlineKeyboardBuilder()
-   builder.button(text="1", payload="n:1")
-   builder.button(text="2", payload="n:2")
-   builder.button(text="3", payload="n:3")
-   builder.button(text="4", payload="n:4")
+   builder.callback(text="1", payload="n:1")
+   builder.callback(text="2", payload="n:2")
+   builder.link(text="Website", url="https://max.ru")
+   builder.clipboard(text="Copy code", payload="PROMO123")
    builder.adjust(2)  # 2 кнопки в ряду
 
    # Отправка через keyboard=

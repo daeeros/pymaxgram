@@ -22,7 +22,16 @@ from .base import UNSET, UNSET_TYPE, MaxObject, MutableMaxObject
 from .error_event import ErrorEvent
 from .bot_command import BotCommand
 from .bot_info import BotInfo
-from .button import Button
+from .button import (
+    Button,
+    CallbackButton,
+    ClipboardButton,
+    LinkButton,
+    MessageButton,
+    OpenAppButton,
+    RequestContactButton,
+    RequestGeoLocationButton,
+)
 from .callback import Callback
 from .chat import Chat
 from .chat_admin import ChatAdmin
@@ -89,7 +98,9 @@ __all__ = [
     "BotInfo",
     "BufferedInputFile",
     "Button",
+    "CallbackButton",
     "Callback",
+    "ClipboardButton",
     "Chat",
     "ChatAdmin",
     "ChatMember",
@@ -102,19 +113,24 @@ __all__ = [
     "InlineKeyboardAttachment",
     "InlineKeyboardAttachmentRequest",
     "InputFile",
+    "LinkButton",
     "LinkedMessage",
     "LocationAttachment",
     "MarkupElement",
     "MaxObject",
+    "MessageButton",
     "Message",
     "MessageBody",
     "MessageStat",
     "MutableMaxObject",
+    "OpenAppButton",
     "NewMessageBody",
     "NewMessageLink",
     "PhotoAttachment",
     "PhotoAttachmentRequest",
     "Recipient",
+    "RequestContactButton",
+    "RequestGeoLocationButton",
     "ShareAttachment",
     "StickerAttachment",
     "Subscription",

@@ -14,8 +14,8 @@ pymaxgram поддерживает inline-клавиатуры для интер
    from maxgram.utils.keyboard import InlineKeyboardBuilder
 
    builder = InlineKeyboardBuilder()
-   builder.button(text="Like", payload="vote:like")
-   builder.button(text="Dislike", payload="vote:dislike")
+   builder.callback(text="Like", payload="vote:like")
+   builder.callback(text="Dislike", payload="vote:dislike")
    builder.adjust(2)  # 2 кнопки в ряду
 
    await message.answer("Rate our bot:", keyboard=builder)
@@ -65,18 +65,40 @@ pymaxgram поддерживает inline-клавиатуры для интер
    * - ``CLIPBOARD``
      - Копирует текст в буфер обмена
 
-Модель Button
--------------
+Классы кнопок
+--------------
+
+Базовый класс ``Button`` содержит только ``type`` и ``text``. Для каждого типа кнопки
+есть свой подкласс с нужными полями:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Класс
+     - Поля
+   * - ``CallbackButton``
+     - ``text``, ``payload: str | None``
+   * - ``LinkButton``
+     - ``text``, ``url: str``
+   * - ``RequestContactButton``
+     - ``text``
+   * - ``RequestGeoLocationButton``
+     - ``text``, ``quick: bool | None``
+   * - ``OpenAppButton``
+     - ``text``, ``web_app: str | None``, ``contact_id: int | None``, ``payload: str | None``
+   * - ``MessageButton``
+     - ``text``
+   * - ``ClipboardButton``
+     - ``text``, ``payload: str``
 
 .. code-block:: python
 
-   Button(
-       type: str,                  # Тип кнопки (ButtonType)
-       text: str,                  # Текст на кнопке
-       payload: str | None = None, # Данные для CALLBACK / CLIPBOARD
-       url: str | None = None,     # URL для LINK
-       intent: str | None = None,  # Намерение
-   )
+   from maxgram.types import CallbackButton, LinkButton, ClipboardButton
+
+   btn1 = CallbackButton(text="Click", payload="data:1")
+   btn2 = LinkButton(text="Open", url="https://max.ru")
+   btn3 = ClipboardButton(text="Copy", payload="PROMO123")
 
 InlineKeyboardBuilder
 ---------------------
@@ -88,9 +110,9 @@ InlineKeyboardBuilder
    from maxgram.utils.keyboard import InlineKeyboardBuilder
 
    builder = InlineKeyboardBuilder()
-   builder.button(text="Option 1", payload="opt:1")
-   builder.button(text="Option 2", payload="opt:2")
-   builder.button(text="Option 3", payload="opt:3")
+   builder.callback(text="Option 1", payload="opt:1")
+   builder.callback(text="Option 2", payload="opt:2")
+   builder.callback(text="Option 3", payload="opt:3")
    builder.adjust(2)  # 2 кнопки в ряду
 
    # Отправка
@@ -102,16 +124,39 @@ InlineKeyboardBuilder
 - Максимум **30** рядов
 - Максимум **210** кнопок всего
 
-Методы builder:
+Методы для добавления кнопок:
 
 .. list-table::
    :header-rows: 1
-   :widths: 30 70
+   :widths: 40 60
 
    * - Метод
      - Описание
+   * - ``callback(text, payload?, *, callback_data?)``
+     - Callback-кнопка. Отправляет событие ``message_callback``
+   * - ``link(text, url)``
+     - Открывает ссылку в новой вкладке
+   * - ``request_contact(text)``
+     - Запрашивает контакт пользователя
+   * - ``request_geo_location(text, *, quick?)``
+     - Запрашивает геолокацию. ``quick=True`` — без подтверждения
+   * - ``open_app(text, *, web_app?, contact_id?, payload?)``
+     - Открывает мини-приложение
+   * - ``message(text)``
+     - Отправляет текст кнопки как сообщение от пользователя
+   * - ``clipboard(text, payload)``
+     - Копирует ``payload`` в буфер обмена
    * - ``button(text, type?, payload?, url?, callback_data?)``
-     - Добавить кнопку
+     - Универсальный метод (для обратной совместимости)
+
+Методы компоновки:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - Метод
+     - Описание
    * - ``row(*buttons)``
      - Начать новый ряд
    * - ``adjust(*sizes)``
@@ -136,8 +181,8 @@ CallbackData с клавиатурами
        action: str
 
    builder = InlineKeyboardBuilder()
-   builder.button(text="Buy", callback_data=ItemAction(id=1, action="buy"))
-   builder.button(text="Info", callback_data=ItemAction(id=1, action="info"))
+   builder.callback(text="Buy", callback_data=ItemAction(id=1, action="buy"))
+   builder.callback(text="Info", callback_data=ItemAction(id=1, action="info"))
 
    await message.answer("Products:", keyboard=builder)
 
@@ -176,5 +221,5 @@ CallbackData с клавиатурами
 
    # Обновить сообщение с новой клавиатурой
    new_builder = InlineKeyboardBuilder()
-   new_builder.button(text="Done", payload="done")
+   new_builder.callback(text="Done", payload="done")
    await callback.answer(text="Updated!", keyboard=new_builder)

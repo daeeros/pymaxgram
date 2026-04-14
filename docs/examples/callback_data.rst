@@ -23,11 +23,11 @@ CallbackData (фабрика)
    @router.message(Command("products"))
    async def show_products(message, bot):
        builder = InlineKeyboardBuilder()
-       builder.button(
+       builder.callback(
            text="Buy iPhone",
            callback_data=ProductCallback(id=1, action="buy"),
        )
-       builder.button(
+       builder.callback(
            text="Info MacBook",
            callback_data=ProductCallback(id=2, action="info"),
        )

@@ -74,8 +74,8 @@ router = Router()
 @router.message(Command("menu"))
 async def show_menu(message, bot):
     builder = InlineKeyboardBuilder()
-    builder.button(text="Like", payload="vote:like")
-    builder.button(text="Dislike", payload="vote:dislike")
+    builder.callback(text="Like", payload="vote:like")
+    builder.callback(text="Dislike", payload="vote:dislike")
     builder.adjust(2)
 
     await message.answer("Rate our bot:", keyboard=builder)
@@ -109,8 +109,8 @@ class ProductCallback(CallbackData, prefix="product"):
 @router.message(Command("products"))
 async def show_products(message, bot):
     builder = InlineKeyboardBuilder()
-    builder.button(text="Buy iPhone", callback_data=ProductCallback(id=1, action="buy"))
-    builder.button(text="Buy MacBook", callback_data=ProductCallback(id=2, action="buy"))
+    builder.callback(text="Buy iPhone", callback_data=ProductCallback(id=1, action="buy"))
+    builder.callback(text="Buy MacBook", callback_data=ProductCallback(id=2, action="buy"))
 
     await message.answer("Our products:", keyboard=builder)
 
@@ -584,8 +584,8 @@ async def cmd_start(event: BotStarted, bot):
 @router.message(Command("order"))
 async def cmd_order(message, state: FSMContext, bot):
     builder = InlineKeyboardBuilder()
-    builder.button(text="Pizza", callback_data=ItemCallback(name="pizza"))
-    builder.button(text="Burger", callback_data=ItemCallback(name="burger"))
+    builder.callback(text="Pizza", callback_data=ItemCallback(name="pizza"))
+    builder.callback(text="Burger", callback_data=ItemCallback(name="burger"))
     builder.adjust(2)
 
     await state.set_state(OrderStates.choosing_item)
@@ -598,8 +598,8 @@ async def on_item_chosen(callback, callback_data: ItemCallback, state: FSMContex
     await state.set_state(OrderStates.confirming)
 
     builder = InlineKeyboardBuilder()
-    builder.button(text="Confirm", callback_data=ConfirmCallback(value=True))
-    builder.button(text="Cancel", callback_data=ConfirmCallback(value=False))
+    builder.callback(text="Confirm", callback_data=ConfirmCallback(value=True))
+    builder.callback(text="Cancel", callback_data=ConfirmCallback(value=False))
     builder.adjust(2)
 
     await callback.answer(

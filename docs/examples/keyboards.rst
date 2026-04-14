@@ -21,8 +21,8 @@ Inline-клавиатуры
    @router.message(Command("menu"))
    async def show_menu(message, bot):
        builder = InlineKeyboardBuilder()
-       builder.button(text="Like", payload="vote:like")
-       builder.button(text="Dislike", payload="vote:dislike")
+       builder.callback(text="Like", payload="vote:like")
+       builder.callback(text="Dislike", payload="vote:dislike")
        builder.adjust(2)
 
        await message.answer("Rate our bot:", keyboard=builder)
@@ -43,17 +43,16 @@ Inline-клавиатуры
 
 .. code-block:: python
 
-   from maxgram.types import InlineKeyboard, Button
-   from maxgram.enums import ButtonType
+   from maxgram.types import InlineKeyboard, CallbackButton, LinkButton
 
    @router.message(Command("links"))
    async def show_links(message, bot):
        keyboard = InlineKeyboard(buttons=[
            [
-               Button(type=ButtonType.CALLBACK, text="Click", payload="btn:1"),
+               CallbackButton(text="Click", payload="btn:1"),
            ],
            [
-               Button(type=ButtonType.LINK, text="Website", url="https://max.ru"),
+               LinkButton(text="Website", url="https://max.ru"),
            ],
        ])
        await message.answer("Links:", keyboard=keyboard)
