@@ -24,6 +24,7 @@ class Callback(MaxObject):
         notify: bool | None = None,
         format: str | None = None,
         keyboard: Any | None = None,
+        clear_attachments: bool = True,
         **kwargs: Any,
     ) -> bool:
         from ..methods.answer_callback import AnswerCallback
@@ -34,6 +35,8 @@ class Callback(MaxObject):
         if text is not None and format is None and bot.default.parse_mode:
             format = bot.default.parse_mode
         attachments = prepare_keyboard(attachments, keyboard)
+        if attachments is None and clear_attachments:
+            attachments = []
 
         return await AnswerCallback(
             callback_id=self.callback_id,
@@ -52,6 +55,7 @@ class Callback(MaxObject):
         notify: bool | None = None,
         format: str | None = None,
         keyboard: Any | None = None,
+        clear_attachments: bool = True,
         **kwargs: Any,
     ) -> bool:
         from ..methods.edit_message import EditMessage
@@ -65,6 +69,8 @@ class Callback(MaxObject):
         if format is None and bot.default.parse_mode:
             format = bot.default.parse_mode
         attachments = prepare_keyboard(attachments, keyboard)
+        if attachments is None and clear_attachments:
+            attachments = []
 
         return await EditMessage(
             message_id=self.message.body.mid,
