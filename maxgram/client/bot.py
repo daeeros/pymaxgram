@@ -14,10 +14,12 @@ from ..methods import (
     DeleteChat,
     DeleteMessage,
     DeleteSubscription,
+    EditBotInfo,
     EditChat,
     EditMessage,
     GetAdmins,
     GetChat,
+    GetChatByLink,
     GetChats,
     GetMe,
     GetMembers,
@@ -40,6 +42,7 @@ from ..methods import (
 )
 from ..methods.base import MaxType
 from ..types import (
+    BotCommand,
     BotInfo,
     Chat,
     ChatMember,
@@ -153,6 +156,28 @@ class Bot:
     async def get_me(self) -> BotInfo:
         return await self(GetMe())
 
+    async def edit_info(
+        self,
+        name: str | None = None,
+        description: str | None = None,
+        commands: list[BotCommand] | None = None,
+        photo: dict[str, Any] | None = None,
+    ) -> BotInfo:
+        return await self(
+            EditBotInfo(
+                name=name,
+                description=description,
+                commands=commands,
+                photo=photo,
+            )
+        )
+
+    async def set_commands(self, commands: list[BotCommand]) -> BotInfo:
+        return await self.edit_info(commands=commands)
+
+    async def delete_commands(self) -> BotInfo:
+        return await self.edit_info(commands=[])
+
     # ==================== Chats ====================
 
     async def get_chats(
@@ -164,6 +189,9 @@ class Bot:
 
     async def get_chat(self, chat_id: int) -> Chat:
         return await self(GetChat(chat_id=chat_id))
+
+    async def get_chat_by_link(self, chat_link: str) -> Chat:
+        return await self(GetChatByLink(chat_link=chat_link))
 
     async def edit_chat(
         self,
@@ -342,10 +370,13 @@ class Bot:
         self,
         chat_id: int | None = None,
         message_ids: list[str] | None = None,
+        from_: int | None = None,
+        to: int | None = None,
         count: int | None = None,
     ) -> list[Message]:
         return await self(GetMessages(
-            chat_id=chat_id, message_ids=message_ids, count=count,
+            chat_id=chat_id, message_ids=message_ids,
+            from_=from_, to=to, count=count,
         ))
 
     async def get_message_by_id(self, message_id: str) -> Message:

@@ -263,6 +263,38 @@ curl -X GET "https://platform-api.max.ru/me" \
 
 ---
 
+### PATCH `/me` — Изменение информации о боте
+
+Позволяет изменить имя, описание, команды и фото бота.
+
+**Пример:**
+```bash
+curl -X PATCH "https://platform-api.max.ru/me" \
+  -H "Authorization: {access_token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Bot",
+    "description": "Bot description",
+    "commands": [
+      { "name": "start", "description": "Start bot" },
+      { "name": "help", "description": "Show help" }
+    ]
+  }'
+```
+
+**Тело запроса:**
+
+| Поле          | Тип                                     | Описание                                |
+| ------------- | --------------------------------------- | --------------------------------------- |
+| `name`        | string, nullable                        | Имя бота                                |
+| `description` | string, nullable                        | Описание (до 16 000 символов)           |
+| `commands`    | `BotCommand[]`, nullable                | До 32 команд. Пустой массив — удалить   |
+| `photo`       | `PhotoAttachmentRequestPayload`, nullable | Фото бота                             |
+
+**Результат:** объект `BotInfo`.
+
+---
+
 ## chats
 
 ### GET `/chats` — Получение списка всех групповых чатов
@@ -302,6 +334,20 @@ curl -X GET "https://platform-api.max.ru/chats/{chatId}" \
 **Параметры пути:** `chatId` — int64, ID запрашиваемого чата.
 
 **Результат:** объект [`Chat`](#chat) (см. раздел «Объекты»).
+
+---
+
+### GET `/chats/{chatLink}` — Получение чата по ссылке
+
+**Пример:**
+```bash
+curl -X GET "https://platform-api.max.ru/chats/{chatLink}" \
+  -H "Authorization: {access_token}"
+```
+
+**Параметры пути:** `chatLink` — string, ссылка на чат.
+
+**Результат:** объект [`Chat`](#chat).
 
 ---
 
@@ -1387,6 +1433,7 @@ curl -X POST "https://platform-api.max.ru/answers?callback_id=callback_id" \
 | `GET /me`                                             | Информация о боте                      |
 | `GET /chats`                                          | Список групповых чатов                 |
 | `GET /chats/{chatId}`                                 | Информация о чате                      |
+| `PATCH /me`                                           | Изменить информацию о боте             |
 | `PATCH /chats/{chatId}`                               | Изменить чат                           |
 | `DELETE /chats/{chatId}`                              | Удалить чат                            |
 | `POST /chats/{chatId}/actions`                        | Отправить действие (typing и т. п.)    |

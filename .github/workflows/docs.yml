@@ -28,21 +28,15 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: |
-          pip install -r docs/requirements.txt
+        run: pip install -r docs/requirements.txt
 
       - name: Build documentation
-        run: |
-          cd docs
-          make html
-
-      - name: Add .nojekyll
-        run: touch docs/_build/html/.nojekyll
+        run: mkdocs build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/_build/html
+          path: site
 
   deploy:
     environment:

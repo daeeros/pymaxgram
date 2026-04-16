@@ -1,0 +1,144 @@
+site_name: pymaxgram
+site_description: Асинхронный Python-фреймворк для создания ботов на платформе MAX Messenger
+site_url: https://daeeros.github.io/pymaxgram/
+repo_url: https://github.com/daeeros/pymaxgram
+repo_name: daeeros/pymaxgram
+
+theme:
+  name: material
+  language: ru
+  palette:
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Тёмная тема
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Светлая тема
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - content.code.copy
+    - content.tabs.link
+    - search.suggest
+    - search.highlight
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search:
+      lang: ru
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Главная: index.md
+  - Начало работы:
+      - getting-started/index.md
+      - Установка: getting-started/installation.md
+      - Быстрый старт: getting-started/quickstart.md
+  - Руководство:
+      - guide/index.md
+      - Класс Bot: guide/bot.md
+      - Dispatcher: guide/dispatcher.md
+      - Обработчики: guide/handlers.md
+      - Фильтры: guide/filters.md
+      - Клавиатуры: guide/keyboards.md
+      - FSM: guide/fsm.md
+      - Middleware: guide/middlewares.md
+      - Форматирование: guide/formatting.md
+      - Файлы: guide/files.md
+      - Webhook: guide/webhook.md
+      - Ошибки: guide/errors.md
+  - API Reference:
+      - api/index.md
+      - Клиент:
+          - Bot: api/client/bot.md
+          - Session: api/client/session.md
+          - DefaultBotProperties: api/client/default.md
+      - Типы:
+          - api/types/index.md
+          - MaxObject: api/types/base.md
+          - User: api/types/user.md
+          - Chat: api/types/chat.md
+          - Message: api/types/message.md
+          - Callback: api/types/callback.md
+          - Update: api/types/update.md
+          - Attachments: api/types/attachments.md
+          - Keyboard: api/types/keyboard.md
+          - InputFile: api/types/input_file.md
+          - Другие: api/types/other.md
+      - Методы:
+          - api/methods/index.md
+          - Base: api/methods/base.md
+          - Сообщения: api/methods/messages.md
+          - Чаты: api/methods/chats.md
+          - Участники: api/methods/members.md
+          - Админы: api/methods/admins.md
+          - Callbacks: api/methods/callbacks.md
+          - Подписки: api/methods/subscriptions.md
+          - Updates: api/methods/updates.md
+          - Uploads: api/methods/uploads.md
+          - Закрепление: api/methods/pins.md
+          - Действия: api/methods/actions.md
+          - Информация о боте: api/methods/bot_info.md
+      - Dispatcher:
+          - Router: api/dispatcher/router.md
+          - Dispatcher: api/dispatcher/dispatcher.md
+          - Event: api/dispatcher/event.md
+          - Middlewares: api/dispatcher/middlewares.md
+      - Фильтры:
+          - api/filters/index.md
+          - Base: api/filters/base.md
+          - Command: api/filters/command.md
+          - CallbackData: api/filters/callback_data.md
+          - State: api/filters/state.md
+          - Другие: api/filters/other.md
+      - FSM:
+          - State: api/fsm/state.md
+          - Context: api/fsm/context.md
+          - Storage: api/fsm/storage.md
+          - Strategy: api/fsm/strategy.md
+      - Handlers: api/handlers/index.md
+      - Enums: api/enums/index.md
+      - Утилиты:
+          - api/utils/index.md
+          - InlineKeyboardBuilder: api/utils/keyboard_builder.md
+          - ChatActionSender: api/utils/chat_action.md
+          - Форматирование: api/utils/formatting.md
+          - Backoff: api/utils/backoff.md
+          - Другие: api/utils/other.md
+      - Exceptions: api/exceptions.md
+      - Webhook: api/webhook/index.md
+  - Примеры:
+      - examples/index.md
+      - Эхо-бот: examples/echo_bot.md
+      - Команды: examples/commands.md
+      - Клавиатуры: examples/keyboards.md
+      - CallbackData: examples/callback_data.md
+      - FSM: examples/fsm.md
+      - Middleware: examples/middleware.md
+      - Файлы: examples/files.md
+      - Форматирование: examples/formatting.md
+      - Класс-обработчики: examples/class_handlers.md

@@ -6,10 +6,12 @@ from .create_subscription import CreateSubscription
 from .delete_chat import DeleteChat
 from .delete_message import DeleteMessage
 from .delete_subscription import DeleteSubscription
+from .edit_bot_info import EditBotInfo
 from .edit_chat import EditChat
 from .edit_message import EditMessage
 from .get_admins import GetAdmins
 from .get_chat import GetChat
+from .get_chat_by_link import GetChatByLink
 from .get_chats import GetChats
 from .get_me import GetMe
 from .get_members import GetMembers
@@ -37,10 +39,12 @@ __all__ = [
     "DeleteChat",
     "DeleteMessage",
     "DeleteSubscription",
+    "EditBotInfo",
     "EditChat",
     "EditMessage",
     "GetAdmins",
     "GetChat",
+    "GetChatByLink",
     "GetChats",
     "GetMe",
     "GetMembers",
