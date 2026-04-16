@@ -1,5 +1,9 @@
 # pymaxgram
 
+[![Docs](https://img.shields.io/badge/docs-mkdocs-blue)](https://daeeros.github.io/pymaxgram/)
+[![PyPI](https://img.shields.io/pypi/v/pymaxgram)](https://pypi.org/project/pymaxgram/)
+[![Python](https://img.shields.io/pypi/pyversions/pymaxgram)](https://pypi.org/project/pymaxgram/)
+
 Async Python framework for building bots on **MAX Messenger** platform.
 
 Built with `asyncio`, `aiohttp`, and `pydantic`.
@@ -628,5 +632,6 @@ asyncio.run(dp.start_polling(bot))
 
 ## Links
 
+- Documentation: https://daeeros.github.io/pymaxgram/
 - MAX Bot API: https://dev.max.ru
 - PyPI: https://pypi.org/project/pymaxgram/
