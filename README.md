@@ -632,6 +632,6 @@ asyncio.run(dp.start_polling(bot))
 
 ## Links
 
-- Documentation: https://daeeros.github.io/pymaxgram/
+- **Documentation**: https://daeeros.github.io/pymaxgram/
 - MAX Bot API: https://dev.max.ru
 - PyPI: https://pypi.org/project/pymaxgram/

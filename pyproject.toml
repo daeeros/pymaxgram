@@ -33,6 +33,7 @@ dependencies = [
 ]
 
 [project.urls]
+Documentation = "https://daeeros.github.io/pymaxgram/"
 Repository = "https://github.com/daeeros/pymaxgram"
 
 [tool.hatch.version]
