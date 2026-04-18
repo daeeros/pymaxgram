@@ -89,8 +89,7 @@ class Command(Filter):
         if not isinstance(message, Message):
             return False
 
-        # MAX messages have text in body.text
-        text = message.body.text if message.body else None
+        text = await self._strip_leading_bot_mention(message, bot)
         if not text:
             return False
 
@@ -102,6 +101,39 @@ class Command(Filter):
         if command.magic_result and isinstance(command.magic_result, dict):
             result.update(command.magic_result)
         return result
+
+    async def _strip_leading_bot_mention(
+        self, message: Message, bot: Bot,
+    ) -> str | None:
+        body = message.body
+        text = body.text if body else None
+        if not text:
+            return text
+
+        if body and body.markup:
+            leading = next(
+                (m for m in body.markup
+                 if m.type == "user_mention" and m.from_pos == 0),
+                None,
+            )
+            if leading is not None:
+                me = await bot.me()
+                if leading.user_id is not None and leading.user_id == me.user_id:
+                    return text[leading.length:].lstrip()
+                return None
+            return text
+
+        if text.startswith("@"):
+            first, _, rest = text.partition(" ")
+            if len(first) > 1:
+                me = await bot.me()
+                uname = me.username
+                if uname and first[1:].lower() == uname.lower():
+                    return rest.lstrip()
+                if first[1].isalnum() or first[1] == "_":
+                    return None
+
+        return text
 
     @classmethod
     def extract_command(cls, text: str) -> CommandObject:
