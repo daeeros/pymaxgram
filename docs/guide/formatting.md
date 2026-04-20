@@ -65,6 +65,24 @@ bot = Bot(
 | Ссылка | `[text](url)` |
 | Упоминание | `[Имя](max://user/user_id)` |
 
+## Рендеринг входящей разметки
+
+Когда приходит сообщение с `body.markup`, необязательно вручную собирать
+HTML из элементов — `MessageBody` имеет готовые свойства:
+
+```python
+@router.message()
+async def handler(message):
+    # Готовый HTML с корректной обработкой UTF-16 оффсетов (эмодзи и др.)
+    await message.answer(text=message.body.html_text, format="html")
+
+    # То же самое в Markdown
+    await message.answer(text=message.body.md_text, format="markdown")
+```
+
+`html_text` экранирует `&`, `<`, `>` в обычных участках текста. Оба свойства
+понимают все 7 типов markup-разметки, включая `link` и `user_mention`.
+
 ## Утилиты форматирования
 
 Модуль `maxgram.utils.formatting` предоставляет типизированные конструкторы:

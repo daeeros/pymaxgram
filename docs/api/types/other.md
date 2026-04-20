@@ -24,20 +24,30 @@ class UploadInfo(MaxObject):
 
 ## VideoInfo
 
-Информация о видео.
+Информация о видео, возвращаемая `GET /videos/{token}`.
 
 ```python
 class VideoUrls(MaxObject):
-    urls: dict[str, str] | None = None
+    mp4_1080: str | None = None
+    mp4_720: str | None = None
+    mp4_480: str | None = None
+    mp4_360: str | None = None
+    mp4_240: str | None = None
+    mp4_144: str | None = None
+    hls: str | None = None
+
 
 class VideoInfo(MaxObject):
     token: str
     urls: VideoUrls | None = None
-    thumbnail: Any | None = None
+    thumbnail: PhotoAttachmentPayload | None = None
     width: int = 0
     height: int = 0
     duration: int = 0
 ```
+
+`VideoUrls` содержит плоские поля по разрешениям, `thumbnail` типизирован как
+`PhotoAttachmentPayload` (см. [Вложения](./attachments.md)).
 
 ## ErrorEvent
 

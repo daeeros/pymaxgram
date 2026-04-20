@@ -1,5 +1,10 @@
 # Вложения
 
+Каждый тип вложения имеет свой типизированный `payload` и дополнительные поля.
+Благодаря discriminated union pydantic сам парсит `{"type": "image", ...}` в
+конкретный подкласс (`PhotoAttachment`, `VideoAttachment` и т.д.) при получении
+сообщений.
+
 ## Типы вложений (Attachment)
 
 ### Attachment (базовый)
@@ -10,21 +15,91 @@ class Attachment(MaxObject):
     payload: Any | None = None
 ```
 
-### Подтипы
+### Подтипы и их поля
 
-| Класс | type | Описание |
+| Класс | type | Поля сверх базовых |
 | --- | --- | --- |
-| `PhotoAttachment` | `"image"` | Изображение |
-| `VideoAttachment` | `"video"` | Видео |
-| `AudioAttachment` | `"audio"` | Аудио |
-| `FileAttachment` | `"file"` | Файл |
-| `StickerAttachment` | `"sticker"` | Стикер |
-| `ContactAttachment` | `"contact"` | Контакт |
-| `InlineKeyboardAttachment` | `"inline_keyboard"` | Inline-клавиатура |
-| `LocationAttachment` | `"location"` | Геолокация |
-| `ShareAttachment` | `"share"` | Поделиться |
+| `PhotoAttachment` | `"image"` | `payload: PhotoAttachmentPayload` |
+| `VideoAttachment` | `"video"` | `payload: VideoAttachmentPayload`, `urls: VideoUrls`, `thumbnail: PhotoAttachmentPayload`, `width/height/duration: int` |
+| `AudioAttachment` | `"audio"` | `payload: AudioAttachmentPayload`, `transcription: str` |
+| `FileAttachment` | `"file"` | `payload: FileAttachmentPayload`, `filename: str`, `size: int` |
+| `StickerAttachment` | `"sticker"` | `payload: StickerAttachmentPayload`, `width/height: int` |
+| `ContactAttachment` | `"contact"` | `payload: ContactAttachmentPayload` |
+| `InlineKeyboardAttachment` | `"inline_keyboard"` | `payload: ButtonsPayload` |
+| `LocationAttachment` | `"location"` | `payload: LocationAttachmentPayload`, `latitude/longitude: float` |
+| `ShareAttachment` | `"share"` | `payload: ShareAttachmentPayload`, `title/description/image_url: str` |
 
-Все подтипы наследуют от `Attachment` и устанавливают значение `type` по умолчанию.
+### Payload-классы
+
+```python
+class PhotoAttachmentPayload(MaxObject):
+    photo_id: int | None = None
+    token: str | None = None
+    url: str | None = None
+
+
+class VideoAttachmentPayload(MaxObject):
+    token: str | None = None
+    url: str | None = None
+
+
+class AudioAttachmentPayload(MaxObject):
+    token: str | None = None
+    url: str | None = None
+
+
+class FileAttachmentPayload(MaxObject):
+    token: str | None = None
+    url: str | None = None
+
+
+class StickerAttachmentPayload(MaxObject):
+    url: str | None = None
+    code: str | None = None
+
+
+class ContactAttachmentPayload(MaxObject):
+    vcf_info: str | None = None
+    max_info: User | None = None
+
+
+class ShareAttachmentPayload(MaxObject):
+    url: str | None = None
+    token: str | None = None
+
+
+class LocationAttachmentPayload(MaxObject):
+    latitude: float | None = None
+    longitude: float | None = None
+
+
+class ButtonsPayload(MaxObject):
+    buttons: list[list[ButtonUnion]] | None = None
+```
+
+`ButtonUnion` включает все 7 типов кнопок (`CallbackButton`, `LinkButton`,
+`RequestContactButton`, `RequestGeoLocationButton`, `OpenAppButton`,
+`MessageButton`, `ClipboardButton`) и тоже парсится через дискриминатор `type`.
+
+### AttachmentUnion
+
+```python
+from typing import Annotated, Union
+from pydantic import Field
+
+AttachmentUnion = Annotated[
+    Union[
+        PhotoAttachment, VideoAttachment, AudioAttachment,
+        FileAttachment, StickerAttachment, ContactAttachment,
+        InlineKeyboardAttachment, LocationAttachment, ShareAttachment,
+    ],
+    Field(discriminator="type"),
+]
+```
+
+`MessageBody.attachments` объявлен как `list[AttachmentUnion] | None`, поэтому
+вложения приходят уже в виде правильного подкласса — без ручного разбора
+`attachment.type`.
 
 ## Запросы вложений (AttachmentRequest)
 
@@ -62,27 +137,49 @@ def from_buttons(
 
 Создаёт вложение клавиатуры из двумерного списка кнопок.
 
-## Пример отправки вложений
+## Примеры
+
+### Приём входящих вложений
 
 ```python
-from maxgram.types import Attachment
-
-# Inline-клавиатура
-await message.answer(
-    text="Choose:",
-    attachments=[
-        Attachment(
-            type="inline_keyboard",
-            payload=keyboard.model_dump(mode="json"),
-        ),
-    ],
+from maxgram.types import (
+    Message, PhotoAttachment, VideoAttachment, AudioAttachment,
 )
+
+
+@router.message()
+async def handler(message: Message, bot):
+    for a in message.body.attachments or []:
+        if isinstance(a, PhotoAttachment):
+            print(a.payload.url, a.payload.token)
+        elif isinstance(a, VideoAttachment):
+            print(a.width, a.height, a.duration, a.urls.mp4_720)
+        elif isinstance(a, AudioAttachment):
+            print(a.payload.token, a.transcription)
+```
+
+### Отправка вложений
+
+```python
+from maxgram.types import PhotoAttachmentRequest, InlineKeyboardAttachmentRequest
+from maxgram.types import CallbackButton
 
 # Изображение по токену
 await message.answer(
     text="Photo:",
     attachments=[
-        Attachment(type="image", payload={"token": "abc123"}),
+        PhotoAttachmentRequest(payload={"token": "abc123"}),
+    ],
+)
+
+# Inline-клавиатура
+await message.answer(
+    text="Choose:",
+    attachments=[
+        InlineKeyboardAttachmentRequest.from_buttons([
+            [CallbackButton(text="Yes", payload="yes"),
+             CallbackButton(text="No", payload="no")],
+        ]),
     ],
 )
 ```
@@ -91,3 +188,4 @@ await message.answer(
 
 - `maxgram/types/attachment.py`
 - `maxgram/types/attachment_request.py`
+- `maxgram/types/button.py`

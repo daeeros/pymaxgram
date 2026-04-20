@@ -104,7 +104,7 @@ class ChatMember(UserWithPhoto):
     is_owner: bool = False
     is_admin: bool = False
     join_time: int | None = None
-    permissions: list[str] | None = None
+    permissions: list[ChatAdminPermission] | None = None
     alias: str | None = None
 ```
 
@@ -116,7 +116,7 @@ class ChatMember(UserWithPhoto):
 | `is_owner` | `bool` | Владелец чата |
 | `is_admin` | `bool` | Администратор |
 | `join_time` | `int \| None` | Время вступления |
-| `permissions` | `list[str] \| None` | Права администратора |
+| `permissions` | `list[ChatAdminPermission] \| None` | Права администратора (валидируются как enum) |
 | `alias` | `str \| None` | Псевдоним в чате |
 
 ## ChatAdmin
@@ -126,9 +126,12 @@ class ChatMember(UserWithPhoto):
 ```python
 class ChatAdmin(MaxObject):
     user_id: int
-    permissions: list[str] | None = None
+    permissions: list[ChatAdminPermission] | None = None
     alias: str | None = None
 ```
+
+Неизвестные значения в `permissions` отклоняются на уровне валидации pydantic —
+полный список допустимых значений см. в [`ChatAdminPermission`](../enums/index.md#chatadminpermission).
 
 ## BotCommand
 

@@ -67,25 +67,67 @@ await message.edit_text(
 
 ```python
 class MessageBody(MaxObject):
-    mid: str                                      # ID сообщения
-    seq: int = 0                                  # Порядковый номер
-    text: str | None = None                       # Текст
-    attachments: list[Attachment] | None = None    # Вложения
-    markup: list[MarkupElement] | None = None      # Разметка текста
+    mid: str                                           # ID сообщения
+    seq: int = 0                                       # Порядковый номер
+    text: str | None = None                            # Текст
+    attachments: list[AttachmentUnion] | None = None   # Вложения (типизированные)
+    markup: list[MarkupElement] | None = None          # Разметка текста
+```
+
+`attachments` — это discriminated union, поэтому каждый элемент приходит сразу
+как конкретный подкласс (`PhotoAttachment`, `VideoAttachment` и т.д.) без
+ручного разбора `attachment.type`. Подробнее см. [Вложения](./attachments.md).
+
+### Свойства html_text / md_text
+
+`MessageBody` собирает готовый отформатированный текст из пары `text + markup`
+с корректным учётом UTF-16 оффсетов (важно для эмодзи и суррогатных пар —
+позиции в `MarkupElement` по спеке MAX API считаются в UTF-16 code units).
+
+```python
+@property
+def html_text(self) -> str: ...
+
+@property
+def md_text(self) -> str: ...
+```
+
+| Тип markup | HTML | Markdown |
+| --- | --- | --- |
+| `strong` | `<b>…</b>` | `**…**` |
+| `emphasized` | `<i>…</i>` | `*…*` |
+| `monospaced` | `<code>…</code>` | `` `…` `` |
+| `strikethrough` | `<s>…</s>` | `~~…~~` |
+| `underline` | `<u>…</u>` | `++…++` |
+| `link` | `<a href="url">…</a>` | `[…](url)` |
+| `user_mention` | `<a href="…">…</a>` | `[…](…)` |
+
+Текст между markup'ами в `html_text` автоматически экранируется (`&`, `<`, `>`).
+Пересекающиеся (overlapping) элементы разметки пропускаются — остаётся только
+первый по `from_pos`.
+
+Пример:
+
+```python
+@router.message()
+async def handler(message: Message, bot):
+    # Вместо ручной сборки <b>, <i> — сразу готовая строка
+    await message.answer(text=message.body.html_text, format="html")
 ```
 
 ### MarkupElement
 
 Элемент разметки текста. MAX API возвращает разметку в виде массива элементов
-с позицией и длиной.
+с позицией и длиной. Позиции `from_pos` и `length` измеряются в UTF-16
+code units — `MessageBody.html_text`/`md_text` учитывают это автоматически.
 
 ```python
 from pydantic import Field
 
 class MarkupElement(MaxObject):
     type: str                          # Тип разметки
-    from_pos: int = Field(alias="from")  # Начало в тексте (0-based)
-    length: int                        # Длина
+    from_pos: int = Field(alias="from")  # Начало в тексте (UTF-16 code units)
+    length: int                        # Длина (UTF-16 code units)
     url: str | None = None             # Только для link
     user_link: str | None = None       # Только для user_mention (@username)
     user_id: int | None = None         # Только для user_mention (ID)

@@ -1,8 +1,19 @@
-# pymaxgram
+<h1 align="center">pymaxgram</h1>
 
-[![Docs](https://img.shields.io/badge/docs-mkdocs-blue)](https://daeeros.github.io/pymaxgram/)
-[![PyPI](https://img.shields.io/pypi/v/pymaxgram)](https://pypi.org/project/pymaxgram/)
-[![Python](https://img.shields.io/pypi/pyversions/pymaxgram)](https://pypi.org/project/pymaxgram/)
+<p align="center">
+  <a href="https://daeeros.github.io/pymaxgram/"><b>📖 Documentation</b></a>
+  &nbsp;•&nbsp;
+  <a href="https://max.ru/"><b>MAX Чат</b></a>
+  &nbsp;•&nbsp;
+  <a href="https://t.me/"><b>TG Чат</b></a>
+</p>
+
+<p align="center">
+  <a href="https://pypi.org/project/pymaxgram/"><img src="https://img.shields.io/pypi/v/pymaxgram?label=pypi&color=4b9bff" alt="PyPI"></a>
+  <a href="https://pypi.org/project/pymaxgram/"><img src="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-4b9bff" alt="Python"></a>
+  <a href="https://daeeros.github.io/pymaxgram/"><img src="https://img.shields.io/badge/docs-mkdocs-brightgreen" alt="Docs"></a>
+  <a href="https://github.com/daeeros/pymaxgram/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="License"></a>
+</p>
 
 Async Python framework for building bots on **MAX Messenger** platform.
 
@@ -632,6 +643,5 @@ asyncio.run(dp.start_polling(bot))
 
 ## Links
 
-- **Documentation**: https://daeeros.github.io/pymaxgram/
 - MAX Bot API: https://dev.max.ru
 - PyPI: https://pypi.org/project/pymaxgram/

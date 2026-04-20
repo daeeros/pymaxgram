@@ -32,15 +32,16 @@ BaseModel + BotContextController
     ├── Button
     ├── InlineKeyboard
     ├── Attachment
-    │   ├── PhotoAttachment
-    │   ├── VideoAttachment
-    │   ├── AudioAttachment
-    │   ├── FileAttachment
-    │   ├── StickerAttachment
-    │   ├── ContactAttachment
-    │   ├── InlineKeyboardAttachment
-    │   ├── LocationAttachment
-    │   └── ShareAttachment
+    │   ├── PhotoAttachment              (payload: PhotoAttachmentPayload)
+    │   ├── VideoAttachment              (payload: VideoAttachmentPayload)
+    │   ├── AudioAttachment              (payload: AudioAttachmentPayload)
+    │   ├── FileAttachment               (payload: FileAttachmentPayload)
+    │   ├── StickerAttachment            (payload: StickerAttachmentPayload)
+    │   ├── ContactAttachment            (payload: ContactAttachmentPayload)
+    │   ├── InlineKeyboardAttachment     (payload: ButtonsPayload)
+    │   ├── LocationAttachment           (payload: LocationAttachmentPayload)
+    │   └── ShareAttachment              (payload: ShareAttachmentPayload)
+    ├── PhotoAttachmentPayload / VideoAttachmentPayload / ... / ButtonsPayload
     ├── AttachmentRequest
     │   ├── PhotoAttachmentRequest
     │   ├── VideoAttachmentRequest
