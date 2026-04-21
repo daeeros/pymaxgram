@@ -489,14 +489,142 @@ class Dispatcher(Router):
                 tasks_concurrency_limit=tasks_concurrency_limit,
             )
 
-            try:
-                import uvloop
-            except ImportError:
-                return asyncio.run(coro)
-            else:
-                if sys.version_info >= (3, 11):
-                    with asyncio.Runner(loop_factory=uvloop.new_event_loop) as runner:
-                        return runner.run(coro)
-                else:
-                    uvloop.install()
-                    return asyncio.run(coro)
+            return _run_with_uvloop(coro)
+
+    async def start_webhook(
+        self,
+        bot: Bot,
+        *,
+        url: str,
+        secret: str | None = None,
+        host: str = "0.0.0.0",
+        port: int = 8080,
+        path: str | None = None,
+        allowed_updates: list[str] | UNSET_TYPE | None = UNSET,
+        drop_pending_updates: bool = False,
+        register_subscription: bool = True,
+        handle_in_background: bool = True,
+        ssl_context: Any = None,
+        ssl_certfile: str | None = None,
+        ssl_keyfile: str | None = None,
+        ip_filter: Any = None,
+        handle_signals: bool = True,
+        close_bot_session: bool = True,
+        access_log: Any = False,
+        app: Any = None,
+        **kwargs: Any,
+    ) -> None:
+        """Async webhook server entrypoint. See :meth:`run_webhook` for details."""
+        from maxgram.webhook.runner import run_webhook_async
+
+        await run_webhook_async(
+            self,
+            bot,
+            url=url,
+            secret=secret,
+            host=host,
+            port=port,
+            path=path,
+            allowed_updates=allowed_updates,
+            drop_pending_updates=drop_pending_updates,
+            register_subscription=register_subscription,
+            handle_in_background=handle_in_background,
+            ssl_context=ssl_context,
+            ssl_certfile=ssl_certfile,
+            ssl_keyfile=ssl_keyfile,
+            ip_filter=ip_filter,
+            handle_signals=handle_signals,
+            close_bot_session=close_bot_session,
+            access_log=access_log,
+            app=app,
+            **kwargs,
+        )
+
+    def run_webhook(
+        self,
+        bot: Bot,
+        *,
+        url: str,
+        secret: str | None = None,
+        host: str = "0.0.0.0",
+        port: int = 8080,
+        path: str | None = None,
+        allowed_updates: list[str] | UNSET_TYPE | None = UNSET,
+        drop_pending_updates: bool = False,
+        register_subscription: bool = True,
+        handle_in_background: bool = True,
+        ssl_context: Any = None,
+        ssl_certfile: str | None = None,
+        ssl_keyfile: str | None = None,
+        ip_filter: Any = None,
+        handle_signals: bool = True,
+        close_bot_session: bool = True,
+        access_log: Any = False,
+        app: Any = None,
+        **kwargs: Any,
+    ) -> None:
+        """Run webhook server in a blocking call (mirror of :meth:`run_polling`).
+
+        Args:
+            bot: Bot instance to receive updates for.
+            url: Public HTTPS URL where MAX will deliver updates (registered as subscription).
+            secret: Optional shared secret; verified via ``X-Max-Bot-Api-Secret`` header.
+            host: Local bind host.
+            port: Local bind port.
+            path: HTTP route path. Defaults to the path component of ``url``.
+            allowed_updates: Update types to subscribe to. ``UNSET`` (default) auto-detects
+                from registered handlers.
+            drop_pending_updates: Delete existing subscription for ``url`` before re-creating.
+            register_subscription: When True (default), automatically calls
+                :meth:`Bot.create_subscription` on startup and :meth:`Bot.delete_subscription`
+                on shutdown. Set to False if a reverse-proxy or another process owns the
+                subscription lifecycle.
+            handle_in_background: Process updates as background tasks, returning 200
+                immediately. Recommended for low-latency response to MAX.
+            ssl_context: Pre-built :class:`ssl.SSLContext` for direct HTTPS termination.
+            ssl_certfile / ssl_keyfile: Shortcut to build an SSLContext from PEM files.
+            ip_filter: :class:`IPFilter` or sequence of allowed IPs/CIDRs.
+            handle_signals: Install SIGINT/SIGTERM handlers for graceful shutdown.
+            close_bot_session: Close ``bot.session`` after the server stops.
+            access_log: ``True`` enables aiohttp access log via :data:`maxgram.loggers.webhook`,
+                a :class:`logging.Logger` enables a custom logger, ``False`` (default) disables.
+            app: Existing :class:`aiohttp.web.Application` to mount the webhook into.
+        """
+        with suppress(KeyboardInterrupt):
+            coro = self.start_webhook(
+                bot,
+                url=url,
+                secret=secret,
+                host=host,
+                port=port,
+                path=path,
+                allowed_updates=allowed_updates,
+                drop_pending_updates=drop_pending_updates,
+                register_subscription=register_subscription,
+                handle_in_background=handle_in_background,
+                ssl_context=ssl_context,
+                ssl_certfile=ssl_certfile,
+                ssl_keyfile=ssl_keyfile,
+                ip_filter=ip_filter,
+                handle_signals=handle_signals,
+                close_bot_session=close_bot_session,
+                access_log=access_log,
+                app=app,
+                **kwargs,
+            )
+
+            return _run_with_uvloop(coro)
+
+
+def _run_with_uvloop(coro: Awaitable[Any]) -> Any:
+    try:
+        import uvloop
+    except ImportError:
+        return asyncio.run(coro)
+    else:
+        if sys.version_info >= (3, 11):
+            with asyncio.Runner(loop_factory=uvloop.new_event_loop) as runner:
+                return runner.run(coro)
+        else:
+            uvloop.install()
+            return asyncio.run(coro)
