@@ -180,13 +180,50 @@ class Dispatcher(Router):
         polling_timeout: int = 30,
         backoff_config: BackoffConfig = DEFAULT_BACKOFF_CONFIG,
         allowed_updates: list[str] | None = None,
+        drop_pending_updates: bool = False,
+        request_timeout: float | None = None,
     ) -> AsyncGenerator[Update, None]:
-        """Endless updates reader using MAX long polling with marker cursor."""
+        """Endless updates reader using MAX long polling with marker cursor.
+
+        When ``drop_pending_updates`` is True, performs a one-shot ``GetUpdates(timeout=0)``
+        before entering the loop and advances the cursor past everything MAX has queued —
+        the drained updates are discarded. Useful for restart scenarios where stale
+        queued events should be ignored.
+
+        ``request_timeout`` is the client-side hard cap on a single ``get_updates`` HTTP
+        request (not the server-side long-poll hint — that's ``polling_timeout``). If
+        MAX sometimes holds connections open past its own ``timeout`` hint, a tight
+        hard cap lets the backoff/retry loop recover quickly instead of hanging for
+        a full session timeout. Default: ``polling_timeout + 5`` seconds.
+        """
         backoff = Backoff(config=backoff_config)
         get_updates = GetUpdates(timeout=polling_timeout, types=allowed_updates)
-        kwargs = {}
-        if bot.session.timeout:
-            kwargs["timeout"] = int(bot.session.timeout + polling_timeout)
+
+        effective_timeout = (
+            request_timeout if request_timeout is not None
+            else float(polling_timeout) + 5.0
+        )
+        kwargs: dict[str, Any] = {}
+        if effective_timeout > 0:
+            kwargs["timeout"] = int(effective_timeout) or 1
+
+        if drop_pending_updates:
+            drain = GetUpdates(timeout=0, types=allowed_updates)
+            try:
+                dropped = await bot(drain, **kwargs)
+            except Exception as e:
+                loggers.dispatcher.warning(
+                    "Failed to drop pending updates for bot id=%s: %s: %s",
+                    bot.id, type(e).__name__, e,
+                )
+            else:
+                dropped_count = len(dropped) if isinstance(dropped, list) else 0
+                get_updates.marker = drain.marker
+                loggers.dispatcher.info(
+                    "Dropped %d pending update(s), resuming from marker=%s for bot id=%s",
+                    dropped_count, drain.marker, bot.id,
+                )
+
         failed = False
         while True:
             try:
@@ -285,6 +322,8 @@ class Dispatcher(Router):
         backoff_config: BackoffConfig = DEFAULT_BACKOFF_CONFIG,
         allowed_updates: list[str] | None = None,
         tasks_concurrency_limit: int | None = None,
+        drop_pending_updates: bool = False,
+        request_timeout: float | None = None,
         **kwargs: Any,
     ) -> None:
         bot_info = await bot.me()
@@ -306,6 +345,8 @@ class Dispatcher(Router):
                 polling_timeout=polling_timeout,
                 backoff_config=backoff_config,
                 allowed_updates=allowed_updates,
+                drop_pending_updates=drop_pending_updates,
+                request_timeout=request_timeout,
             ):
                 handle_update = self._process_update(bot=bot, update=update, **kwargs)
                 if handle_as_tasks:
@@ -382,6 +423,8 @@ class Dispatcher(Router):
         handle_signals: bool = True,
         close_bot_session: bool = True,
         tasks_concurrency_limit: int | None = None,
+        drop_pending_updates: bool = False,
+        request_timeout: float | None = None,
         **kwargs: Any,
     ) -> None:
         if not bots:
@@ -441,6 +484,8 @@ class Dispatcher(Router):
                             backoff_config=backoff_config,
                             allowed_updates=allowed_updates,
                             tasks_concurrency_limit=tasks_concurrency_limit,
+                            drop_pending_updates=drop_pending_updates,
+                            request_timeout=request_timeout,
                             **workflow_data,
                         ),
                     )
@@ -474,6 +519,8 @@ class Dispatcher(Router):
         handle_signals: bool = True,
         close_bot_session: bool = True,
         tasks_concurrency_limit: int | None = None,
+        drop_pending_updates: bool = False,
+        request_timeout: float | None = None,
         **kwargs: Any,
     ) -> None:
         with suppress(KeyboardInterrupt):
@@ -487,6 +534,8 @@ class Dispatcher(Router):
                 handle_signals=handle_signals,
                 close_bot_session=close_bot_session,
                 tasks_concurrency_limit=tasks_concurrency_limit,
+                drop_pending_updates=drop_pending_updates,
+                request_timeout=request_timeout,
             )
 
             return _run_with_uvloop(coro)

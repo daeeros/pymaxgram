@@ -53,9 +53,15 @@ async def start_polling(
     handle_signals: bool = True,
     close_bot_session: bool = True,
     tasks_concurrency_limit: int | None = None,
+    drop_pending_updates: bool = False,
+    request_timeout: float | None = None,
     **kwargs: Any,
 ) -> None
 ```
+
+- **`polling_timeout`** — серверный long-polling hint для MAX (query `?timeout=N`).
+- **`request_timeout`** — клиентский жёсткий таймаут aiohttp на один HTTP-запрос. `None` = `polling_timeout + 5`.
+- **`drop_pending_updates`** — перед входом в цикл выполнить `GetUpdates(timeout=0)`, отбросить результат и начать с свежего маркера.
 
 ### run_polling
 
@@ -63,7 +69,7 @@ async def start_polling(
 def run_polling(self, *bots, **kwargs) -> None
 ```
 
-Блокирующая версия `start_polling`. Автоматически использует `uvloop` если доступен.
+Блокирующая версия `start_polling`. Принимает те же параметры. Автоматически использует `uvloop` если доступен.
 
 ### stop_polling
 
