@@ -62,14 +62,20 @@ class BaseSession(abc.ABC):
         content: str,
     ) -> Any:
         """Check response and return parsed result."""
+        is_success = HTTPStatus.OK <= status_code <= HTTPStatus.IM_USED
+
         try:
             json_data = self.json_loads(content)
         except Exception as e:
-            msg = "Failed to decode object"
-            raise ClientDecodeError(msg, e, content) from e
+            if is_success:
+                msg = "Failed to decode object"
+                raise ClientDecodeError(msg, e, content) from e
+            # Error status with non-JSON body (e.g. 429 "too manyrequests") —
+            # surface the raw text as the description so callers see the right typed exception.
+            description = content.strip() or f"HTTP {status_code}"
+            self._raise_for_status(method, status_code, description)
 
-        # If HTTP status is OK
-        if HTTPStatus.OK <= status_code <= HTTPStatus.IM_USED:
+        if is_success:
             # For bool-returning methods (success/message pattern)
             if method.__returning__ is bool:
                 if isinstance(json_data, dict) and "success" in json_data:
@@ -119,11 +125,18 @@ class BaseSession(abc.ABC):
                 msg = "Failed to deserialize object"
                 raise ClientDecodeError(msg, e, json_data) from e
 
-        # Error responses
+        # Error responses (JSON body)
         description = "Unknown error"
         if isinstance(json_data, dict):
             description = json_data.get("message", json_data.get("description", str(json_data)))
+        self._raise_for_status(method, status_code, description)
 
+    def _raise_for_status(
+        self,
+        method: MaxMethod[MaxType],
+        status_code: int,
+        description: str,
+    ) -> None:
         if status_code == HTTPStatus.BAD_REQUEST:
             raise MaxBadRequest(method=method, message=description)
         if status_code == HTTPStatus.UNAUTHORIZED:
