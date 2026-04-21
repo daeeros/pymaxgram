@@ -1,5 +1,5 @@
-import asyncio
-import secrets
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from asyncio import Transport
 from collections.abc import Awaitable, Callable
@@ -11,7 +11,11 @@ from aiohttp.web_app import Application
 from aiohttp.web_middlewares import middleware
 
 from maxgram import Bot, Dispatcher, loggers
+from maxgram.webhook.core import WebhookProcessor
 from maxgram.webhook.security import IPFilter
+
+if TYPE_CHECKING:
+    pass
 
 
 def setup_application(app: Application, dispatcher: Dispatcher, /, **kwargs: Any) -> None:
@@ -69,7 +73,6 @@ class BaseRequestHandler(ABC):
         self.dispatcher = dispatcher
         self.handle_in_background = handle_in_background
         self.data = data
-        self._background_feed_update_tasks: set[asyncio.Task[Any]] = set()
 
     def register(self, app: Application, /, path: str, **kwargs: Any) -> None:
         app.on_shutdown.append(self._handle_close)
@@ -90,39 +93,28 @@ class BaseRequestHandler(ABC):
     def verify_secret(self, secret_token: str, bot: Bot) -> bool:
         pass
 
-    async def _background_feed_update(self, bot: Bot, update: dict[str, Any]) -> None:
-        await self.dispatcher.feed_raw_update(bot=bot, update=update, **self.data)
-
-    async def _handle_request_background(self, bot: Bot, request: web.Request) -> web.Response:
-        feed_update_task = asyncio.create_task(
-            self._background_feed_update(
-                bot=bot,
-                update=await request.json(loads=bot.session.json_loads),
-            ),
-        )
-        self._background_feed_update_tasks.add(feed_update_task)
-        feed_update_task.add_done_callback(self._background_feed_update_tasks.discard)
-        return web.json_response({}, dumps=bot.session.json_dumps)
-
-    async def _handle_request(self, bot: Bot, request: web.Request) -> web.Response:
-        """Process request. MAX does not support returning methods in webhook response."""
-        await self.dispatcher.feed_webhook_update(
-            bot,
-            await request.json(loads=bot.session.json_loads),
-            **self.data,
-        )
-        return web.json_response({})
-
     async def handle(self, request: web.Request) -> web.Response:
         bot = await self.resolve_bot(request)
-        # MAX uses X-Max-Bot-Api-Secret header
         if not self.verify_secret(
             request.headers.get("X-Max-Bot-Api-Secret", ""), bot
         ):
             return web.Response(body="Unauthorized", status=401)
-        if self.handle_in_background:
-            return await self._handle_request_background(bot=bot, request=request)
-        return await self._handle_request(bot=bot, request=request)
+
+        processor = WebhookProcessor(
+            dispatcher=self.dispatcher,
+            bot=bot,
+            secret_token=None,  # already verified above via resolve_bot-scoped logic
+            ip_filter=None,     # handled by ip_filter_middleware at app level
+            handle_in_background=self.handle_in_background,
+            data=self.data,
+        )
+        payload = await request.json(loads=bot.session.json_loads)
+        result = await processor.process(payload)
+        return web.json_response(
+            result.body,
+            status=result.status,
+            dumps=bot.session.json_dumps,
+        )
 
     __call__ = handle
 
@@ -141,8 +133,9 @@ class SimpleRequestHandler(BaseRequestHandler):
         self.secret_token = secret_token
 
     def verify_secret(self, secret_token: str, bot: Bot) -> bool:
+        import secrets as _secrets
         if self.secret_token:
-            return secrets.compare_digest(secret_token, self.secret_token)
+            return _secrets.compare_digest(secret_token, self.secret_token)
         return True
 
     async def close(self) -> None:

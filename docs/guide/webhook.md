@@ -76,7 +76,62 @@ dp.run_webhook(
 | `handle_signals` | `True` | Обработка `SIGINT`/`SIGTERM` |
 | `close_bot_session` | `True` | Закрыть `bot.session` после остановки |
 | `access_log` | `False` | `True` — включить access-лог через `maxgram.loggers.webhook` |
-| `app` | `None` | Существующий `aiohttp.web.Application` для встраивания |
+| `app` | `None` | Существующий `aiohttp.web.Application` для встраивания (только `aiohttp` бэкенд) |
+| `backend` | `WebhookBackend.AIOHTTP` | HTTP-бэкенд: `AIOHTTP` / `FASTAPI` / `SANIC` |
+
+## Выбор HTTP-бэкенда
+
+По умолчанию pymaxgram поднимает webhook-сервер на **aiohttp** — он уже в зависимостях, никаких дополнительных пакетов. Для тех, кому важна максимальная пропускная способность (обычно заметно при нагрузке выше ~500 req/s), доступны ещё два бэкенда:
+
+| Бэкенд | Установка | На чём работает |
+| --- | --- | --- |
+| `WebhookBackend.AIOHTTP` (по умолчанию) | включён | `aiohttp` собственной реализации |
+| `WebhookBackend.FASTAPI` | `pip install pymaxgram[fastapi]` | FastAPI на `uvicorn` с `uvloop` + `httptools` |
+| `WebhookBackend.SANIC` | `pip install pymaxgram[sanic]` | Sanic с собственным httptools-сервером |
+
+```python
+from maxgram import Bot, Dispatcher
+from maxgram.webhook import WebhookBackend
+
+bot = Bot(token="TOKEN")
+dp = Dispatcher()
+
+@dp.message()
+async def echo(message):
+    await message.answer(message.body.text)
+
+# FastAPI + uvicorn
+dp.run_webhook(
+    bot,
+    url="https://max.example.com/webhook",
+    secret="...",
+    backend=WebhookBackend.FASTAPI,
+    host="127.0.0.1",
+    port=8080,
+)
+
+# Sanic
+dp.run_webhook(
+    bot,
+    url="https://max.example.com/webhook",
+    secret="...",
+    backend=WebhookBackend.SANIC,
+)
+```
+
+Строковый эквивалент тоже принимается: `backend="fastapi"` / `backend="sanic"`.
+
+**Что внутри:**
+
+- FastAPI-бэкенд программно запускает `uvicorn.Server` с `loop="uvloop"`, `http="httptools"`, `ws="none"`, `lifespan="on"`. Встроенные сигнальные обработчики uvicorn отключаются, чтобы `handle_signals` работал одинаково во всех бэкендах.
+- Sanic-бэкенд использует собственный Sanic-сервер (тоже httptools). Запускается через `app.create_server(return_asyncio_server=True)` + наш `stop_event`.
+
+**На что обратить внимание:**
+
+- Параметр `app=` (встраивание в готовый `aiohttp.web.Application`) работает только с бэкендом `AIOHTTP`. Для FastAPI/Sanic используйте низкоуровневый `WebhookProcessor` (см. раздел «Продвинутое использование»).
+- `ip_filter`, `secret`, `handle_in_background`, `ssl_certfile`/`ssl_keyfile`, `ssl_context`, `drop_pending_updates` поддерживаются всеми бэкендами одинаково.
+- Если выбран бэкенд, а пакет не установлен, `run_webhook` кинет `RuntimeError` с подсказкой `pip install pymaxgram[fastapi]` / `pip install pymaxgram[sanic]`.
+- Разница в throughput между бэкендами заметна только на высокой нагрузке. Для обычного бота любой из трёх справится одинаково.
 
 ## Async-вариант
 

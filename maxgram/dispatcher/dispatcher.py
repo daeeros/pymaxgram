@@ -512,10 +512,14 @@ class Dispatcher(Router):
         close_bot_session: bool = True,
         access_log: Any = False,
         app: Any = None,
+        backend: Any = None,
         **kwargs: Any,
     ) -> None:
         """Async webhook server entrypoint. See :meth:`run_webhook` for details."""
+        from maxgram.webhook.backends import WebhookBackend
         from maxgram.webhook.runner import run_webhook_async
+
+        resolved_backend = backend if backend is not None else WebhookBackend.AIOHTTP
 
         await run_webhook_async(
             self,
@@ -537,6 +541,7 @@ class Dispatcher(Router):
             close_bot_session=close_bot_session,
             access_log=access_log,
             app=app,
+            backend=resolved_backend,
             **kwargs,
         )
 
@@ -561,6 +566,7 @@ class Dispatcher(Router):
         close_bot_session: bool = True,
         access_log: Any = False,
         app: Any = None,
+        backend: Any = None,
         **kwargs: Any,
     ) -> None:
         """Run webhook server in a blocking call (mirror of :meth:`run_polling`).
@@ -588,7 +594,13 @@ class Dispatcher(Router):
             close_bot_session: Close ``bot.session`` after the server stops.
             access_log: ``True`` enables aiohttp access log via :data:`maxgram.loggers.webhook`,
                 a :class:`logging.Logger` enables a custom logger, ``False`` (default) disables.
-            app: Existing :class:`aiohttp.web.Application` to mount the webhook into.
+            app: Existing :class:`aiohttp.web.Application` to mount the webhook into
+                (``aiohttp`` backend only).
+            backend: HTTP backend to use. Accepts :class:`maxgram.webhook.WebhookBackend`
+                members or the equivalent strings (``"aiohttp"``, ``"fastapi"``,
+                ``"sanic"``). Defaults to ``WebhookBackend.AIOHTTP``.
+                ``fastapi`` requires ``pip install pymaxgram[fastapi]``;
+                ``sanic`` requires ``pip install pymaxgram[sanic]``.
         """
         with suppress(KeyboardInterrupt):
             coro = self.start_webhook(
@@ -610,6 +622,7 @@ class Dispatcher(Router):
                 close_bot_session=close_bot_session,
                 access_log=access_log,
                 app=app,
+                backend=backend,
                 **kwargs,
             )
 
