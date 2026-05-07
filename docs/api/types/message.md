@@ -50,10 +50,8 @@ await message.reply(
     keyboard: InlineKeyboardBuilder | InlineKeyboard | list | None = None,
 ) -> Message
 
-# Удалить сообщение
-await message.delete() -> bool
-
 # Отредактировать текст
+# Если attachments и keyboard не переданы — все вложения удаляются
 await message.edit_text(
     text: str | None = None,
     attachments: list | None = None,

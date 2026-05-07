@@ -12,7 +12,6 @@ from ..methods import (
     AssignAdmins,
     CreateSubscription,
     DeleteChat,
-    DeleteMessage,
     DeleteSubscription,
     EditBotInfo,
     EditChat,
@@ -355,6 +354,8 @@ class Bot:
         if format is None and self.default.parse_mode:
             format = self.default.parse_mode
         attachments = prepare_keyboard(attachments, keyboard)
+        if attachments is None:
+            attachments = []
         return await self(EditMessage(
             message_id=message_id,
             text=text,
@@ -362,9 +363,6 @@ class Bot:
             notify=notify,
             format=format,
         ))
-
-    async def delete_message(self, message_id: str) -> bool:
-        return await self(DeleteMessage(message_id=message_id))
 
     async def get_messages(
         self,

@@ -83,14 +83,6 @@ await callback.edit_text(
 Редактирует сообщение через `PUT /messages`. Требует `callback.message`.
 `clear_attachments=True` по умолчанию убирает вложения и клавиатуру.
 
-### delete_message
-
-```python
-await callback.delete_message() -> bool
-```
-
-Удаляет сообщение. Требует `callback.message`.
-
 ## Исходный файл
 
 `maxgram/types/callback.py`

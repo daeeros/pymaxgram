@@ -34,17 +34,7 @@ class EditMessage(MaxMethod[bool]):
 
 - `message_id` передаётся как query param
 - Остальное — в теле
-
-## DeleteMessage
-
-`DELETE /messages` → `bool`
-
-```python
-class DeleteMessage(MaxMethod[bool]):
-    message_id: str
-```
-
-- `message_id` передаётся как query param
+- Если `attachments` не передан (или `None`), в тело отправляется `attachments: []` — все вложения удаляются
 
 ## GetMessages
 
@@ -72,6 +62,5 @@ class GetMessageById(MaxMethod[Message]):
 
 - `maxgram/methods/send_message.py`
 - `maxgram/methods/edit_message.py`
-- `maxgram/methods/delete_message.py`
 - `maxgram/methods/get_messages.py`
 - `maxgram/methods/get_message_by_id.py`

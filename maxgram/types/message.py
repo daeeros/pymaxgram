@@ -11,7 +11,6 @@ from .user import User
 
 if TYPE_CHECKING:
     from ..methods.answer_callback import AnswerCallback
-    from ..methods.delete_message import DeleteMessage
     from ..methods.edit_message import EditMessage
     from ..methods.send_message import SendMessage
 
@@ -101,13 +100,6 @@ class Message(MaxObject):
             **kwargs,
         ).as_(bot)
 
-    async def delete(self) -> bool:
-        from ..methods.delete_message import DeleteMessage
-
-        return await DeleteMessage(
-            message_id=self.body.mid,
-        ).as_(self.bot)
-
     async def edit_text(
         self,
         text: str | None = None,
@@ -124,6 +116,8 @@ class Message(MaxObject):
         if format is None and bot.default.parse_mode:
             format = bot.default.parse_mode
         attachments = prepare_keyboard(attachments, keyboard)
+        if attachments is None:
+            attachments = []
 
         return await EditMessage(
             message_id=self.body.mid,

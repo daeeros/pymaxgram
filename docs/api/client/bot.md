@@ -100,8 +100,7 @@ class Bot:
 ### Сообщения
 
 - `send_message(chat_id?, user_id?, text?, attachments?, link?, notify?, format?, disable_link_preview?, keyboard?) -> Message`
-- `edit_message(message_id, text?, attachments?, notify?, format?, keyboard?) -> bool`
-- `delete_message(message_id) -> bool`
+- `edit_message(message_id, text?, attachments?, notify?, format?, keyboard?) -> bool` — если `attachments` и `keyboard` не переданы, все вложения удаляются
 - `get_messages(chat_id?, message_ids?, from_?, to?, count?) -> list[Message]`
 - `get_message_by_id(message_id) -> Message`
 

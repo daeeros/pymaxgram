@@ -80,14 +80,3 @@ class Callback(MaxObject):
             format=format,
             **kwargs,
         ).as_(bot)
-
-    async def delete_message(self) -> bool:
-        from ..methods.delete_message import DeleteMessage
-
-        if self.message is None:
-            msg = "Cannot delete message: callback.message is None"
-            raise RuntimeError(msg)
-
-        return await DeleteMessage(
-            message_id=self.message.body.mid,
-        ).as_(self.bot)
