@@ -81,7 +81,6 @@ class MaxRateLimitError(MaxAPIError):
         message: str,
     ) -> None:
         description = f"Rate limit exceeded on method {type(method).__name__!r}"
-        description += f"\nOriginal description: {message}"
         super().__init__(method=method, message=description)
 
 

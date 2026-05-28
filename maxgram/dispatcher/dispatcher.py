@@ -4,7 +4,7 @@ import asyncio
 import signal
 import sys
 import warnings
-from asyncio import CancelledError, Event, Future, Lock
+from asyncio import CancelledError, Event, Lock
 from collections.abc import AsyncGenerator, Awaitable
 from contextlib import suppress
 from typing import TYPE_CHECKING, Any
@@ -16,7 +16,7 @@ from maxgram.fsm.storage.base import BaseEventIsolation, BaseStorage
 from maxgram.fsm.storage.memory import DisabledEventIsolation, MemoryStorage
 from maxgram.fsm.strategy import FSMStrategy
 from maxgram.methods import GetUpdates, MaxMethod
-from maxgram.types import Update, User
+from maxgram.types import Update
 from maxgram.types.base import UNSET, UNSET_TYPE
 from maxgram.types.update import UpdateTypeLookupError
 from maxgram.utils.backoff import Backoff, BackoffConfig
@@ -29,7 +29,6 @@ from .router import Router
 
 if TYPE_CHECKING:
     from maxgram.client.bot import Bot
-    from maxgram.methods.base import MaxType
 
 DEFAULT_BACKOFF_CONFIG = BackoffConfig(min_delay=1.0, max_delay=5.0, factor=1.3, jitter=0.1)
 

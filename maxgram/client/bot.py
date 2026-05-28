@@ -45,14 +45,13 @@ from ..types import (
     BotInfo,
     Chat,
     ChatMember,
+    MarkedList,
     Message,
     Subscription,
     Update,
     UploadInfo,
-    User,
     VideoInfo,
 )
-from .context_controller import BotContextController
 from .default import DefaultBotProperties
 
 T = TypeVar("T")
@@ -183,7 +182,7 @@ class Bot:
         self,
         count: int | None = None,
         marker: int | None = None,
-    ) -> list[Chat]:
+    ) -> MarkedList[Chat]:
         return await self(GetChats(count=count, marker=marker))
 
     async def get_chat(self, chat_id: int) -> Chat:
@@ -240,7 +239,7 @@ class Bot:
         self,
         chat_id: int,
         marker: int | None = None,
-    ) -> list[ChatMember]:
+    ) -> MarkedList[ChatMember]:
         return await self(GetAdmins(chat_id=chat_id, marker=marker))
 
     async def assign_admins(
@@ -259,7 +258,7 @@ class Bot:
         user_ids: list[int] | None = None,
         marker: int | None = None,
         count: int | None = None,
-    ) -> list[ChatMember]:
+    ) -> MarkedList[ChatMember]:
         return await self(GetMembers(
             chat_id=chat_id, user_ids=user_ids, marker=marker, count=count,
         ))
@@ -301,7 +300,7 @@ class Bot:
         timeout: int | None = None,
         marker: int | None = None,
         types: list[str] | None = None,
-    ) -> list[Update]:
+    ) -> MarkedList[Update]:
         return await self(GetUpdates(
             limit=limit, timeout=timeout, marker=marker, types=types,
         ))

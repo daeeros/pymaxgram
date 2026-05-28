@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from .base import MaxObject
 from .linked_message import LinkedMessage
@@ -8,11 +8,6 @@ from .message_body import MessageBody
 from .message_stat import MessageStat
 from .recipient import Recipient
 from .user import User
-
-if TYPE_CHECKING:
-    from ..methods.answer_callback import AnswerCallback
-    from ..methods.edit_message import EditMessage
-    from ..methods.send_message import SendMessage
 
 
 class Message(MaxObject):

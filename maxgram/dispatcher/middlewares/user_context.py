@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from maxgram.dispatcher.middlewares.base import BaseMiddleware
-from maxgram.types import Chat, MaxObject, Recipient, Update, User
+from maxgram.types import MaxObject, Update, User
 
 EVENT_CONTEXT_KEY = "event_context"
 

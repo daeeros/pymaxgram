@@ -20,7 +20,6 @@ if TYPE_CHECKING:
     from maxgram.client.bot import Bot
     from maxgram.methods import MaxMethod
     from maxgram.methods.base import MaxType
-    from maxgram.types import InputFile
 
 _ProxyBasic = str | tuple[str, BasicAuth]
 _ProxyChain = Iterable[_ProxyBasic]

@@ -22,15 +22,15 @@ from maxgram.exceptions import (
     MaxServiceUnavailable,
     MaxUnauthorizedError,
 )
+from maxgram.types import MarkedList
 from .middlewares.manager import RequestMiddlewareManager
 
 if TYPE_CHECKING:
     from types import TracebackType
 
     from maxgram.client.bot import Bot
-    from maxgram.methods import MaxMethod, Response
+    from maxgram.methods import MaxMethod
     from maxgram.methods.base import MaxType
-    from maxgram.types import MaxObject
 
 _JsonLoads = Callable[..., Any]
 _JsonDumps = Callable[..., str]
@@ -91,10 +91,12 @@ class BaseSession(abc.ABC):
                 if returning_type is list:
                     item_type = getattr(method, "__item_type__", None)
                     raw_list = json_data
+                    marker: int | None = None
                     if isinstance(json_data, dict):
                         # Extract marker for pagination if present
+                        marker = json_data.get("marker")
                         if hasattr(method, "marker") and "marker" in json_data:
-                            method.marker = json_data["marker"]
+                            method.marker = marker
                         for key in ("messages", "chats", "members", "updates", "subscriptions"):
                             if key in json_data:
                                 raw_list = json_data[key]
@@ -103,11 +105,17 @@ class BaseSession(abc.ABC):
                             if "message" in json_data and isinstance(json_data["message"], dict):
                                 raw_list = json_data["message"]
                     if item_type and isinstance(raw_list, list):
-                        return [
+                        result = MarkedList(
                             item_type.model_validate(item, context={"bot": bot})
                             if isinstance(item, dict) else item
                             for item in raw_list
-                        ]
+                        )
+                        result.marker = marker
+                        return result
+                    if isinstance(raw_list, list):
+                        result = MarkedList(raw_list)
+                        result.marker = marker
+                        return result
                     return raw_list
                 else:
                     # Single object responses
