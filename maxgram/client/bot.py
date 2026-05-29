@@ -12,6 +12,7 @@ from ..methods import (
     AssignAdmins,
     CreateSubscription,
     DeleteChat,
+    DeleteMessage,
     DeleteSubscription,
     EditBotInfo,
     EditChat,
@@ -362,6 +363,9 @@ class Bot:
             notify=notify,
             format=format,
         ))
+
+    async def delete_message(self, message_id: str) -> bool:
+        return await self(DeleteMessage(message_id=message_id))
 
     async def get_messages(
         self,

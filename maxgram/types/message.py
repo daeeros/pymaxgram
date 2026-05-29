@@ -95,6 +95,13 @@ class Message(MaxObject):
             **kwargs,
         ).as_(bot)
 
+    async def delete(self) -> bool:
+        from ..methods.delete_message import DeleteMessage
+
+        return await DeleteMessage(
+            message_id=self.body.mid,
+        ).as_(self.bot)
+
     async def edit_text(
         self,
         text: str | None = None,
