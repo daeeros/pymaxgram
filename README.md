@@ -45,6 +45,11 @@ dp.include_router(router)
 asyncio.run(dp.start_polling(bot))
 ```
 
+> **С 19 июля 2025** MAX перешёл с `platform-api.max.ru` на `platform-api2.max.ru`, чей TLS-сертификат
+> выпущен УЦ Минцифры России. pymaxgram использует новый адрес по умолчанию и **доверяет сертификату
+> Минцифры из коробки** (он поставляется в пакете). Отключить доверие можно так:
+> `Bot(token=..., session=AiohttpSession(trust_russian_ca=False))`.
+
 ---
 
 ## Examples

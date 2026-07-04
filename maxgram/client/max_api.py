@@ -7,7 +7,7 @@ from dataclasses import dataclass
 class MaxAPIServer:
     """MAX API server configuration."""
 
-    base: str = "https://platform-api.max.ru"
+    base: str = "https://platform-api2.max.ru"
 
     def api_url(self, path: str) -> str:
         """Build full API URL from path."""

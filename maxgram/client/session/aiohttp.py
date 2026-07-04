@@ -5,7 +5,6 @@ import ssl
 from collections.abc import AsyncGenerator, Iterable
 from typing import TYPE_CHECKING, Any
 
-import certifi
 from aiohttp import BasicAuth, ClientError, ClientSession, FormData, TCPConnector
 from aiohttp.hdrs import USER_AGENT
 from aiohttp.http import SERVER_SOFTWARE
@@ -15,6 +14,7 @@ from maxgram.__meta__ import __version__
 from maxgram.exceptions import MaxNetworkError
 
 from .base import BaseSession
+from .ssl import create_ssl_context
 
 if TYPE_CHECKING:
     from maxgram.client.bot import Bot
@@ -67,13 +67,29 @@ def _prepare_connector(chain_or_plain: _ProxyType) -> tuple[type[TCPConnector], 
 
 
 class AiohttpSession(BaseSession):
-    def __init__(self, proxy: _ProxyType | None = None, limit: int = 100, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        proxy: _ProxyType | None = None,
+        limit: int = 100,
+        ssl_context: ssl.SSLContext | None = None,
+        trust_russian_ca: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        """Create an aiohttp-based session.
+
+        :param proxy: optional SOCKS/HTTP proxy (requires ``aiohttp-socks``).
+        :param limit: connection pool limit.
+        :param ssl_context: custom SSL context; overrides ``trust_russian_ca``.
+        :param trust_russian_ca: trust the bundled Минцифры CA required by
+            ``platform-api2.max.ru`` (default ``True``). Ignored when
+            ``ssl_context`` is provided.
+        """
         super().__init__(**kwargs)
 
         self._session: ClientSession | None = None
         self._connector_type: type[TCPConnector] = TCPConnector
         self._connector_init: dict[str, Any] = {
-            "ssl": ssl.create_default_context(cafile=certifi.where()),
+            "ssl": ssl_context or create_ssl_context(trust_russian_ca),
             "limit": limit,
             "ttl_dns_cache": 3600,
         }

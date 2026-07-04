@@ -89,14 +89,35 @@ class BaseRequestMiddleware(ABC):
 ```python
 from maxgram.client.max_api import MaxAPIServer, PRODUCTION
 
-MaxAPIServer(base="https://platform-api.max.ru")
+MaxAPIServer(base="https://platform-api2.max.ru")
 
 # Методы
-server.api_url("/me")  # "https://platform-api.max.ru/me"
+server.api_url("/me")  # "https://platform-api2.max.ru/me"
 MaxAPIServer.from_base("https://custom-api.example.com")
 
 # Константа
-PRODUCTION = MaxAPIServer(base="https://platform-api.max.ru")
+PRODUCTION = MaxAPIServer(base="https://platform-api2.max.ru")
+```
+
+## Сертификат Минцифры (TLS)
+
+Хост `platform-api2.max.ru` использует TLS-сертификат, выпущенный удостоверяющим центром
+Минцифры России (*Russian Trusted Root CA*), которого нет в стандартном наборе `certifi`.
+pymaxgram поставляет этот сертификат в комплекте и доверяет ему **по умолчанию**, поэтому
+запросы работают из коробки.
+
+```python
+from maxgram.client.session.aiohttp import AiohttpSession
+
+# По умолчанию сертификат Минцифры доверенный
+session = AiohttpSession()
+
+# Отключить доверие к CA Минцифры
+session = AiohttpSession(trust_russian_ca=False)
+
+# Полностью свой SSL-контекст (переопределяет trust_russian_ca)
+import ssl
+session = AiohttpSession(ssl_context=ssl.create_default_context())
 ```
 
 ## Исходные файлы
