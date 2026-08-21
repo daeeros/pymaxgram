@@ -1146,7 +1146,7 @@ curl -X POST "https://platform-api.max.ru/answers?callback_id=callback_id" \
 | Поле                | Тип                              | Описание                                                                                      |
 | ------------------- | -------------------------------- | --------------------------------------------------------------------------------------------- |
 | `chat_id`           | int64                            | ID чата                                                                                       |
-| `type`              | enum `"chat"`                    | Тип (пока единственное значение)                                                              |
+| `type`              | enum                             | `dialog` / `chat` / `channel` (см. поправку ниже)                                             |
 | `status`            | enum                             | `active` / `removed` / `left` / `closed` — статус бота в чате                                 |
 | `title`             | string, nullable                 | Название. `null` для диалогов                                                                 |
 | `icon`              | `Image`, nullable                | Иконка чата                                                                                   |
@@ -1160,6 +1160,7 @@ curl -X POST "https://platform-api.max.ru/answers?callback_id=callback_id" \
 | `dialog_with_user`  | `UserWithPhoto`, nullable        | Только для `"dialog"`                                                                         |
 | `chat_message_id`   | string, nullable                 | ID сообщения, чья кнопка инициировала чат                                                     |
 | `pinned_message`    | [`Message`](#message), nullable  | Закреплённое сообщение (возвращается только при запросе конкретного чата)                     |
+| `messages_count`    | int32, optional                  | Число сообщений. Не описано в официальной документации, приходит для каналов                  |
 
 **Значения `status`:**
 - `active` — бот активный участник
@@ -1547,9 +1548,13 @@ curl -X POST "https://platform-api.max.ru/subscriptions" \
 - **Максимум 30 rps** — закладывайте очередь/троттлинг в клиенте.
 - **Редактирование и удаление сообщений** — только в течение **24 часов** с момента отправки.
 - **Токен только в заголовке** (`Authorization`), query-параметр больше не поддерживается.
-- Для **каналов** некоторые поля `Message` (`stat`, `url`) возвращаются, для диалогов и групп — нет.
+- Для **каналов** поля `Message` (`stat`, `url`) возвращаются в ответе на `POST /messages`; во входящих апдейтах `message_created` они **не заполняются** (проверено на живом канале). Отличать пост канала следует по `recipient.chat_type == "channel"`.
 - В методах пагинации (`GET /chats`, `GET /chats/{chatId}/members` и др.) для первой страницы передавайте `marker = null` (или не передавайте вовсе).
 - В `POST /messages` **нельзя** передавать одновременно `user_id` и `chat_id` — только что-то одно.
+- Пост канала приходит обычным `message_created` без поля `sender` — он публикуется от имени канала.
+- Собственные сообщения бота обратно как `message_created` **не** приходят.
+- Для получения постов канала боту хватает прав `read_all_messages` + `write`; `post_edit_delete_message` не требуется ни для чтения, ни для ответа.
+- `link.type = "forward"` требует **пустой** `text`, иначе `400 {"code": "proto.payload", "message": "errors.forward.text.not-empty"}`.
 - Для полноты информации по наследникам `User` (`UserWithPhoto`, `BotInfo`, `ChatMember`) и вспомогательным объектам (`Recipient`, `LinkedMessage`, `MessageBody`, `MessageStat`, `AttachmentRequest`, `NewMessageLink`, `Image`, `Subscription`, `BotCommand`, `ChatAdmin`, `FailedUserDetails`, `VideoUrls`, `PhotoAttachmentPayload`, `PhotoAttachmentRequestPayload`) см. официальную документацию — там доступны отдельные страницы для каждого типа.
 
 ---

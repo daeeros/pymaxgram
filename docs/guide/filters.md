@@ -141,6 +141,28 @@ async def no_state(message, bot):
     pass
 ```
 
+## ChatTypeFilter и ChannelPost
+
+Фильтры по типу чата, из которого пришло событие:
+
+```python
+from maxgram.enums import ChatType
+from maxgram.filters import ChannelPost, ChatTypeFilter
+
+# Только посты в каналах
+@router.message(ChannelPost())
+async def on_channel_post(message, bot):
+    await message.reply("Комментарий от бота")
+
+# Всё, кроме каналов
+@router.message(ChatTypeFilter(ChatType.DIALOG, ChatType.CHAT))
+async def not_a_channel(message, bot):
+    pass
+```
+
+Тип берётся из `recipient.chat_type`, поэтому фильтр работает и для
+`message_callback` — там он смотрит на вложенное сообщение.
+
 ## ExceptionTypeFilter
 
 Фильтр ошибок по типу исключения:

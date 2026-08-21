@@ -1,5 +1,6 @@
 from .base import Filter
 from .callback_data import CallbackData, CallbackDataFilter
+from .chat_type import ChannelPost, ChatTypeFilter
 from .command import Command, CommandObject
 from .exception import ExceptionMessageFilter, ExceptionTypeFilter
 from .logic import and_f, invert_f, or_f
@@ -12,6 +13,8 @@ __all__ = (
     "BaseFilter",
     "CallbackData",
     "CallbackDataFilter",
+    "ChannelPost",
+    "ChatTypeFilter",
     "Command",
     "CommandObject",
     "ExceptionMessageFilter",

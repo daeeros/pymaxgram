@@ -28,6 +28,49 @@ class ExceptionMessageFilter(Filter):
 async def handle(error, bot): ...
 ```
 
+## ChatTypeFilter
+
+Фильтр по типу чата, из которого пришло событие.
+
+```python
+class ChatTypeFilter(Filter):
+    def __init__(self, *chat_types: str | ChatType) -> None: ...
+```
+
+Тип берётся из `recipient.chat_type`; для `Callback` и `Update` — из вложенного
+сообщения, поэтому фильтр работает и на `@router.message()`, и на
+`@router.message_callback()`.
+
+```python
+from maxgram.enums import ChatType
+from maxgram.filters import ChatTypeFilter
+
+@router.message(ChatTypeFilter(ChatType.DIALOG, ChatType.CHAT))
+async def not_a_channel(message, bot): ...
+```
+
+## ChannelPost
+
+Сокращение для `ChatTypeFilter(ChatType.CHANNEL)` — пропускает только посты,
+опубликованные в канале.
+
+```python
+class ChannelPost(ChatTypeFilter):
+    def __init__(self) -> None: ...
+```
+
+```python
+from maxgram.filters import ChannelPost
+
+@router.message(ChannelPost())
+async def on_channel_post(message, bot):
+    await message.reply("Комментарий от бота")
+```
+
+Чтобы получать посты канала, бот должен быть администратором канала с правами
+`read_all_messages` и `write`. Собственные сообщения бота обратно как
+`message_created` не приходят, поэтому зацикливания не возникает.
+
 ## MagicData
 
 Фильтр по данным middleware через magic-filter.
@@ -66,6 +109,7 @@ async def handler(message, bot): ...
 
 ## Исходные файлы
 
+- `maxgram/filters/chat_type.py`
 - `maxgram/filters/exception.py`
 - `maxgram/filters/magic_data.py`
 - `maxgram/filters/logic.py`

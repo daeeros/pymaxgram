@@ -21,6 +21,22 @@ class Message(MaxObject):
     stat: MessageStat | None = None
     url: str | None = None
 
+    @property
+    def chat_type(self) -> str | None:
+        """Type of the chat this message belongs to (``dialog``/``chat``/``channel``)."""
+        return self.recipient.chat_type
+
+    @property
+    def is_channel_post(self) -> bool:
+        """Whether this message is a post published in a channel.
+
+        Note that channel posts carry no ``sender`` - they are published on
+        behalf of the channel itself. The ``stat`` and ``url`` fields are *not*
+        populated on incoming updates despite what the API reference says, so
+        the recipient chat type is the only reliable signal.
+        """
+        return self.recipient.is_channel
+
     async def answer(
         self,
         text: str | None = None,

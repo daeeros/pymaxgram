@@ -58,6 +58,10 @@ All API methods inherit `MaxMethod[ReturnType]` with class vars `__returning__`,
 
 `BaseMiddleware.__call__(handler, event, data) -> Any`. Outer middleware runs for all events; inner only when handler matched. Built-in: `ErrorsMiddleware`, `UserContextMiddleware`, `FSMContextMiddleware`.
 
+### Channels
+
+Channel posts arrive as ordinary `message_created` updates — there is no channel-specific `update_type`. The bot must be a channel admin (`read_all_messages` + `write` is enough). Identify a channel post via `Message.is_channel_post` / `recipient.chat_type == "channel"`; `stat` and `url` are NOT populated on incoming updates despite the API reference. Channel posts have no `sender`. The bot's own messages do not come back as `message_created`. Filters: `ChannelPost()` / `ChatTypeFilter(*types)` in `filters/chat_type.py`.
+
 ### Keyboard Helper
 
 `keyboard=` parameter on `message.answer()`, `message.reply()`, `callback.answer()`, `bot.send_message()` etc. accepts `InlineKeyboardBuilder`, `InlineKeyboard`, or `list[list[Button]]`. Converted via `prepare_keyboard()` in `utils/keyboard.py`.
@@ -88,3 +92,5 @@ Full API spec in `max-bot-api.md`. Key differences from Telegram:
 - Formatting: `<b>`, `<i>`, `<s>`, `<u>`, `<code>`, `<pre>`, `<a href>` for HTML; `**`, `*`, `~~`, `++`, `` ` ``, `[]()` for Markdown. No spoiler/blockquote support.
 - Callback answer: `POST /answers` with `message` (edit) and/or `notification` (toast)
 - Max 30 rps, 4GB file uploads, 4000 char message limit, 128 byte callback payload
+- `link.type="forward"` requires an empty `text` (otherwise `errors.forward.text.not-empty`)
+- `Chat.type` really is `dialog`/`chat`/`channel` and responses carry an undocumented `messages_count`, despite what `max-bot-api.md` claims — the spec file carries inline corrections

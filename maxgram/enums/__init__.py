@@ -3,6 +3,7 @@ from .button_type import ButtonType
 from .chat_action import ChatAction
 from .chat_admin_permission import ChatAdminPermission
 from .chat_status import ChatStatus
+from .chat_type import ChatType
 from .content_type import ContentType
 from .markup_type import MarkupType
 from .parse_mode import ParseMode
@@ -15,6 +16,7 @@ __all__ = [
     "ChatAction",
     "ChatAdminPermission",
     "ChatStatus",
+    "ChatType",
     "ContentType",
     "MarkupType",
     "ParseMode",

@@ -142,3 +142,4 @@ nav:
       - Файлы: examples/files.md
       - Форматирование: examples/formatting.md
       - Класс-обработчики: examples/class_handlers.md
+      - Каналы: examples/channels.md

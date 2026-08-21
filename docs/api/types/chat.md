@@ -19,6 +19,7 @@ class Chat(MaxObject):
     dialog_with_user: UserWithPhoto | None = None
     chat_message_id: str | None = None
     pinned_message: Message | None = None
+    messages_count: int | None = None
 ```
 
 ## Поля
@@ -40,6 +41,14 @@ class Chat(MaxObject):
 | `dialog_with_user` | `UserWithPhoto \| None` | Пользователь (для диалогов) |
 | `chat_message_id` | `str \| None` | ID сообщения чата |
 | `pinned_message` | `Message \| None` | Закреплённое сообщение |
+| `messages_count` | `int \| None` | Количество сообщений (возвращается для каналов) |
+
+## Свойства
+
+| Свойство | Тип | Описание |
+| --- | --- | --- |
+| `is_channel` | `bool` | `type == "channel"` |
+| `is_dialog` | `bool` | `type == "dialog"` |
 
 ## Image
 

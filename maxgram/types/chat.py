@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from ..enums.chat_type import ChatType
 from .base import MaxObject
 from .image import Image
 
@@ -28,3 +29,14 @@ class Chat(MaxObject):
     dialog_with_user: UserWithPhoto | None = None
     chat_message_id: str | None = None
     pinned_message: Message | None = None
+    messages_count: int | None = None
+
+    @property
+    def is_channel(self) -> bool:
+        """Whether this chat is a channel."""
+        return self.type == ChatType.CHANNEL
+
+    @property
+    def is_dialog(self) -> bool:
+        """Whether this chat is a one-to-one dialog."""
+        return self.type == ChatType.DIALOG

@@ -7,6 +7,8 @@
 - `CommandObject` — результат парсинга команды
 - `CallbackData` — структурированные callback данные
 - `StateFilter` — фильтр FSM-состояния
+- `ChatTypeFilter` — фильтр по типу чата (`dialog` / `chat` / `channel`)
+- `ChannelPost` — только посты в каналах
 - `ExceptionTypeFilter` — фильтр по типу исключения
 - `ExceptionMessageFilter` — фильтр по тексту ошибки
 - `MagicData` — фильтр по данным middleware

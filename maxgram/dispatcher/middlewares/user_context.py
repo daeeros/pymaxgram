@@ -9,12 +9,14 @@ EVENT_CONTEXT_KEY = "event_context"
 
 EVENT_FROM_USER_KEY = "event_from_user"
 EVENT_CHAT_KEY = "event_chat"
+EVENT_CHAT_TYPE_KEY = "event_chat_type"
 
 
 @dataclass(frozen=True)
 class EventContext:
     chat_id: int | None = None
     user: User | None = None
+    chat_type: str | None = None
 
     @property
     def user_id(self) -> int | None:
@@ -37,6 +39,8 @@ class UserContextMiddleware(BaseMiddleware):
             data[EVENT_FROM_USER_KEY] = event_context.user
         if event_context.chat_id is not None:
             data[EVENT_CHAT_KEY] = event_context.chat_id
+        if event_context.chat_type is not None:
+            data[EVENT_CHAT_TYPE_KEY] = event_context.chat_type
 
         return await handler(event, data)
 
@@ -48,14 +52,18 @@ class UserContextMiddleware(BaseMiddleware):
                 return EventContext(
                     chat_id=event.message.recipient.chat_id,
                     user=event.message.sender,
+                    chat_type=event.message.recipient.chat_type,
                 )
         if event.update_type == "message_callback" and event.callback:
             chat_id = None
+            chat_type = None
             if event.callback.message and event.callback.message.recipient:
                 chat_id = event.callback.message.recipient.chat_id
+                chat_type = event.callback.message.recipient.chat_type
             return EventContext(
                 chat_id=chat_id,
                 user=event.callback.user,
+                chat_type=chat_type,
             )
         if event.update_type == "message_removed":
             return EventContext(

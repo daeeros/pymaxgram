@@ -27,6 +27,28 @@ class Message(MaxObject):
 | `stat` | `MessageStat \| None` | Статистика (просмотры для каналов) |
 | `url` | `str \| None` | URL сообщения |
 
+!!! warning "stat и url в апдейтах"
+    Вопреки описанию в API-справочнике, во входящих апдейтах `message_created`
+    поля `stat` и `url` **не заполняются** даже для постов в каналах — они
+    возвращаются только в ответе на `POST /messages`. Определять канал следует
+    по `recipient.chat_type`, см. свойство `is_channel_post`.
+
+### Свойства
+
+| Свойство | Тип | Описание |
+| --- | --- | --- |
+| `chat_type` | `str \| None` | Тип чата (`recipient.chat_type`) |
+| `is_channel_post` | `bool` | Пост опубликован в канале |
+
+```python
+from maxgram.filters import ChannelPost
+
+@router.message(ChannelPost())
+async def on_channel_post(message, bot):
+    # У постов канала sender is None - они публикуются от имени канала
+    await message.reply("Комментарий от бота")
+```
+
 ### Методы
 
 ```python
@@ -184,9 +206,13 @@ class LinkedMessage(MaxObject):
 ```python
 class Recipient(MaxObject):
     chat_id: int | None = None     # ID чата
-    chat_type: str | None = None   # Тип чата
+    chat_type: str | None = None   # Тип чата: "dialog" / "chat" / "channel"
     user_id: int | None = None     # ID пользователя (для ЛС)
 ```
+
+| Свойство | Тип | Описание |
+| --- | --- | --- |
+| `is_channel` | `bool` | `chat_type == "channel"` |
 
 ## NewMessageBody
 
