@@ -67,10 +67,3 @@ jobs:
           git tag "v${{ steps.version.outputs.version }}"
           git pull --rebase origin main
           git push origin main --tags
-
-      - name: Publish to PyPI
-        if: steps.check.outputs.skip != 'true'
-        env:
-          HATCH_INDEX_USER: __token__
-          HATCH_INDEX_AUTH: ${{ secrets.PYPI_API_TOKEN }}
-        run: hatch publish

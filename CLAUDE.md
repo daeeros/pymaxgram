@@ -11,10 +11,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pip install hatch
 hatch build          # build wheel + sdist
-hatch publish        # publish to PyPI (needs PYPI_API_TOKEN)
 ```
 
-Version is in `maxgram/__meta__.py`. CI auto-bumps patch on push to main.
+Version is in `maxgram/__meta__.py`. CI auto-bumps patch on push to main and pushes a `vX.Y.Z` tag. Not published to PyPI anymore — consumers install from git pinned to a tag: `pymaxgram[fastapi] @ git+https://github.com/daeeros/pymaxgram.git@vX.Y.Z`.
 
 ### Documentation (Sphinx)
 

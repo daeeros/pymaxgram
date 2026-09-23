@@ -1,18 +1,32 @@
 # Установка
 
-## Из PyPI
+pymaxgram больше не публикуется на PyPI --- ставится напрямую из GitHub.
+Каждый релиз помечен тегом `vX.Y.Z` (список: [теги](https://github.com/daeeros/pymaxgram/tags)).
 
-Самый простой способ установки --- через pip:
-
-```bash
-pip install pymaxgram
-```
-
-## Конкретная версия
+## Через pip
 
 ```bash
-pip install pymaxgram==4.0.1
+pip install "pymaxgram @ git+https://github.com/daeeros/pymaxgram.git@v4.0.47"
 ```
+
+С дополнительными зависимостями (extras):
+
+```bash
+pip install "pymaxgram[fastapi] @ git+https://github.com/daeeros/pymaxgram.git@v4.0.47"
+```
+
+## В requirements.txt
+
+```text
+pymaxgram[fastapi] @ git+https://github.com/daeeros/pymaxgram.git@v4.0.47
+```
+
+Всегда указывайте тег, а не ветку: так на всех серверах стоит одна и та же
+версия. Обновление --- поменять тег и выполнить `pip install -r requirements.txt`.
+
+!!! note "Нужен git"
+    pip клонирует репозиторий и собирает пакет сам, поэтому на машине должен
+    быть установлен `git`.
 
 ## Из исходного кода
 

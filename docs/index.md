@@ -1,7 +1,6 @@
 # pymaxgram --- документация
 
-[![PyPI version](https://img.shields.io/pypi/v/pymaxgram.svg)](https://pypi.org/project/pymaxgram/)
-[![Python versions](https://img.shields.io/pypi/pyversions/pymaxgram.svg)](https://pypi.org/project/pymaxgram/)
+[![Version](https://img.shields.io/github/v/tag/daeeros/pymaxgram?label=version)](https://github.com/daeeros/pymaxgram/tags)
 [![License](https://img.shields.io/github/license/daeeros/pymaxgram.svg)](https://github.com/daeeros/pymaxgram/blob/main/LICENSE)
 
 **pymaxgram** --- асинхронный Python-фреймворк для создания ботов на платформе [MAX Messenger](https://max.ru).

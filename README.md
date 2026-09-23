@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/pymaxgram/"><img src="https://img.shields.io/pypi/v/pymaxgram?label=pypi&color=4b9bff" alt="PyPI"></a>
-  <a href="https://pypi.org/project/pymaxgram/"><img src="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-4b9bff" alt="Python"></a>
+  <a href="https://github.com/daeeros/pymaxgram/tags"><img src="https://img.shields.io/github/v/tag/daeeros/pymaxgram?label=version&color=4b9bff" alt="Version"></a>
+  <img src="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-4b9bff" alt="Python">
   <a href="https://daeeros.github.io/pymaxgram/"><img src="https://img.shields.io/badge/docs-mkdocs-brightgreen" alt="Docs"></a>
   <a href="https://github.com/daeeros/pymaxgram/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="License"></a>
 </p>
@@ -21,9 +21,19 @@ Built with `asyncio`, `aiohttp`, and `pydantic`.
 
 ## Installation
 
+Installed straight from GitHub (not published to PyPI anymore). Pin a release tag:
+
 ```bash
-pip install pymaxgram
+pip install "pymaxgram @ git+https://github.com/daeeros/pymaxgram.git@v4.0.47"
 ```
+
+In `requirements.txt` (extras work too):
+
+```text
+pymaxgram[fastapi] @ git+https://github.com/daeeros/pymaxgram.git@v4.0.47
+```
+
+Available versions: [tags](https://github.com/daeeros/pymaxgram/tags).
 
 ## Quick Start
 
@@ -649,4 +659,4 @@ asyncio.run(dp.start_polling(bot))
 ## Links
 
 - MAX Bot API: https://dev.max.ru
-- PyPI: https://pypi.org/project/pymaxgram/
+- Releases: https://github.com/daeeros/pymaxgram/tags
