@@ -267,18 +267,18 @@ curl -X GET "https://platform-api.max.ru/me" \
 
 ---
 
-### PATCH `/me` — Изменение информации о боте
+### PATCH `/me/commands` — Редактирование команд бота
 
-Позволяет изменить имя, описание, команды и фото бота.
+Добавляет, изменяет или удаляет команды бота, отображаемые пользователю в подсказках при вводе «/». Для удаления команд передайте пустой массив `commands`.
+
+> **Поправка (сентябрь 2026):** `PATCH /me` (имя, описание, команды, фото) удалён — оба домена отвечают `404 {"code":"method.not.found","message":"Path /me is not recognized..."}`. Команды теперь меняются только этим методом; имя, описание и фото через Bot API не меняются.
 
 **Пример:**
 ```bash
-curl -X PATCH "https://platform-api.max.ru/me" \
+curl -X PATCH "https://platform-api2.max.ru/me/commands" \
   -H "Authorization: {access_token}" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "My Bot",
-    "description": "Bot description",
     "commands": [
       { "name": "start", "description": "Start bot" },
       { "name": "help", "description": "Show help" }
@@ -288,14 +288,11 @@ curl -X PATCH "https://platform-api.max.ru/me" \
 
 **Тело запроса:**
 
-| Поле          | Тип                                     | Описание                                |
-| ------------- | --------------------------------------- | --------------------------------------- |
-| `name`        | string, nullable                        | Имя бота                                |
-| `description` | string, nullable                        | Описание (до 16 000 символов)           |
-| `commands`    | `BotCommand[]`, nullable                | До 32 команд. Пустой массив — удалить   |
-| `photo`       | `PhotoAttachmentRequestPayload`, nullable | Фото бота                             |
+| Поле       | Тип                    | Описание                              |
+| ---------- | ---------------------- | ------------------------------------- |
+| `commands` | `BotCommand[]`         | До 32 команд. Пустой массив — удалить |
 
-**Результат:** объект `BotInfo`.
+**Результат:** `{"commands": BotCommand[]}` — итоговый список команд.
 
 ---
 
@@ -1438,7 +1435,7 @@ curl -X POST "https://platform-api.max.ru/answers?callback_id=callback_id" \
 | `GET /me`                                             | Информация о боте                      |
 | `GET /chats`                                          | Список групповых чатов                 |
 | `GET /chats/{chatId}`                                 | Информация о чате                      |
-| `PATCH /me`                                           | Изменить информацию о боте             |
+| `PATCH /me/commands`                                  | Изменить команды бота                  |
 | `PATCH /chats/{chatId}`                               | Изменить чат                           |
 | `DELETE /chats/{chatId}`                              | Удалить чат                            |
 | `POST /chats/{chatId}/actions`                        | Отправить действие (typing и т. п.)    |

@@ -92,5 +92,6 @@ Full API spec in `max-bot-api.md`. Key differences from Telegram:
 - Formatting: `<b>`, `<i>`, `<s>`, `<u>`, `<code>`, `<pre>`, `<a href>` for HTML; `**`, `*`, `~~`, `++`, `` ` ``, `[]()` for Markdown. No spoiler/blockquote support.
 - Callback answer: `POST /answers` with `message` (edit) and/or `notification` (toast)
 - Max 30 rps, 4GB file uploads, 4000 char message limit, 128 byte callback payload
+- `PATCH /me` is gone (404 `method.not.found`) — bot commands are set via `PATCH /me/commands` (`EditBotCommands`, returns `{"commands": [...]}`); name/description/photo can't be changed via the API anymore
 - `link.type="forward"` requires an empty `text` (otherwise `errors.forward.text.not-empty`)
 - `Chat.type` really is `dialog`/`chat`/`channel` and responses carry an undocumented `messages_count`, despite what `max-bot-api.md` claims — the spec file carries inline corrections

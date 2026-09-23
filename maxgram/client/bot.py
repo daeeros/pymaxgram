@@ -14,6 +14,7 @@ from ..methods import (
     DeleteChat,
     DeleteMessage,
     DeleteSubscription,
+    EditBotCommands,
     EditBotInfo,
     EditChat,
     EditMessage,
@@ -162,6 +163,11 @@ class Bot:
         commands: list[BotCommand] | None = None,
         photo: dict[str, Any] | None = None,
     ) -> BotInfo:
+        """PATCH /me — removed by MAX (answers 404 ``method.not.found``).
+
+        Kept for backward compatibility. Use :meth:`set_commands` for commands;
+        name, description and photo can no longer be changed via the Bot API.
+        """
         return await self(
             EditBotInfo(
                 name=name,
@@ -171,11 +177,11 @@ class Bot:
             )
         )
 
-    async def set_commands(self, commands: list[BotCommand]) -> BotInfo:
-        return await self.edit_info(commands=commands)
+    async def set_commands(self, commands: list[BotCommand]) -> list[BotCommand]:
+        return await self(EditBotCommands(commands=commands))
 
-    async def delete_commands(self) -> BotInfo:
-        return await self.edit_info(commands=[])
+    async def delete_commands(self) -> list[BotCommand]:
+        return await self.set_commands([])
 
     # ==================== Chats ====================
 

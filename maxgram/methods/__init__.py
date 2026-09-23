@@ -6,6 +6,7 @@ from .create_subscription import CreateSubscription
 from .delete_chat import DeleteChat
 from .delete_message import DeleteMessage
 from .delete_subscription import DeleteSubscription
+from .edit_bot_commands import EditBotCommands
 from .edit_bot_info import EditBotInfo
 from .edit_chat import EditChat
 from .edit_message import EditMessage
@@ -39,6 +40,7 @@ __all__ = [
     "DeleteChat",
     "DeleteMessage",
     "DeleteSubscription",
+    "EditBotCommands",
     "EditBotInfo",
     "EditChat",
     "EditMessage",

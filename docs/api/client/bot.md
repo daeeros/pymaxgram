@@ -51,9 +51,9 @@ class Bot:
 
 - `get_me() -> BotInfo`
 - `me() -> BotInfo` — кэшированная версия
-- `edit_info(name?, description?, commands?, photo?) -> BotInfo`
-- `set_commands(commands) -> BotInfo`
-- `delete_commands() -> BotInfo`
+- `edit_info(name?, description?, commands?, photo?) -> BotInfo` — `PATCH /me`, удалён в MAX API (404)
+- `set_commands(commands) -> list[BotCommand]` — `PATCH /me/commands`
+- `delete_commands() -> list[BotCommand]`
 
 ### Чаты
 

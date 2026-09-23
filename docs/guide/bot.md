@@ -92,15 +92,19 @@ await bot.edit_info(
 ) -> BotInfo
 ```
 
-Изменяет информацию о боте (`PATCH /me`). Передавайте только те поля, которые нужно обновить.
+!!! warning "Удалён в MAX API"
+    MAX убрал `PATCH /me` — вызов падает с `MaxNotFound`
+    (`Path /me is not recognized`). Имя, описание и фото бота через Bot API
+    больше не меняются. Для команд используйте `set_commands()`.
 
 ### set_commands
 
 ```python
-await bot.set_commands(commands: list[BotCommand]) -> BotInfo
+await bot.set_commands(commands: list[BotCommand]) -> list[BotCommand]
 ```
 
-Устанавливает список команд бота. Шорткат для `edit_info(commands=...)`.
+Устанавливает список команд бота (`PATCH /me/commands`, до 32 команд).
+Возвращает итоговый список команд.
 
 ```python
 from maxgram.types import BotCommand
@@ -114,7 +118,7 @@ await bot.set_commands([
 ### delete_commands
 
 ```python
-await bot.delete_commands() -> BotInfo
+await bot.delete_commands() -> list[BotCommand]
 ```
 
 Удаляет все команды бота.

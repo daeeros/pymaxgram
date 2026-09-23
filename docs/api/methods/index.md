@@ -7,6 +7,7 @@
 | Класс | HTTP | API путь | Возврат | Раздел |
 |-------|------|----------|---------|--------|
 | `GetMe` | GET | `/me` | `BotInfo` | [bot_info](bot_info.md) |
+| `EditBotCommands` | PATCH | `/me/commands` | `list[BotCommand]` | [bot_info](bot_info.md) |
 | `SendMessage` | POST | `/messages` | `Message` | [messages](messages.md) |
 | `EditMessage` | PUT | `/messages` | `bool` | [messages](messages.md) |
 | `DeleteMessage` | DELETE | `/messages` | `bool` | [messages](messages.md) |

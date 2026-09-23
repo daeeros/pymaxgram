@@ -25,18 +25,15 @@ if info.commands:
         print(f"  /{cmd.name} — {cmd.description}")
 ```
 
-## EditBotInfo
+## EditBotCommands
 
-`PATCH /me` → `BotInfo`
+`PATCH /me/commands` → `list[BotCommand]`
 
-Изменяет информацию о боте.
+Устанавливает команды бота (до 32). Пустой список удаляет все команды.
 
 ```python
-class EditBotInfo(MaxMethod[BotInfo]):
-    name: str | None = None
-    description: str | None = None
-    commands: list[BotCommand] | None = None
-    photo: dict[str, Any] | None = None
+class EditBotCommands(MaxMethod[list[BotCommand]]):
+    commands: list[BotCommand]
 ```
 
 ## Пример
@@ -51,14 +48,29 @@ await bot.set_commands([
     BotCommand(name="settings", description="Настройки"),
 ])
 
-# Изменить описание
-await bot.edit_info(description="Мой бот для MAX")
-
 # Удалить все команды
 await bot.delete_commands()
+```
+
+## EditBotInfo
+
+`PATCH /me` → `BotInfo`
+
+!!! warning "Удалён в MAX API"
+    MAX убрал `PATCH /me` — сервер отвечает `404 method.not.found`
+    (`MaxNotFound`). Имя, описание и фото бота через Bot API больше не
+    меняются. Для команд используйте `EditBotCommands` / `bot.set_commands()`.
+
+```python
+class EditBotInfo(MaxMethod[BotInfo]):
+    name: str | None = None
+    description: str | None = None
+    commands: list[BotCommand] | None = None
+    photo: dict[str, Any] | None = None
 ```
 
 ## Исходные файлы
 
 - `maxgram/methods/get_me.py`
+- `maxgram/methods/edit_bot_commands.py`
 - `maxgram/methods/edit_bot_info.py`

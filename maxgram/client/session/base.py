@@ -97,7 +97,7 @@ class BaseSession(abc.ABC):
                         marker = json_data.get("marker")
                         if hasattr(method, "marker") and "marker" in json_data:
                             method.marker = marker
-                        for key in ("messages", "chats", "members", "updates", "subscriptions"):
+                        for key in ("messages", "chats", "members", "updates", "subscriptions", "commands"):
                             if key in json_data:
                                 raw_list = json_data[key]
                                 break
