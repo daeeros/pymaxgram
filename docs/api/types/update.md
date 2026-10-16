@@ -21,8 +21,18 @@ class Update(MaxObject):
     admin_id: int | None = None
     message_id: str | None = None
     user_id: int | None = None
+    post_id: str | None = None
     muted_until: int | None = None
+    # bot_admin_permissions_changed
+    bot_id: int | None = None
+    is_admin: bool | None = None
+    permissions: list[str] | None = None
 ```
+
+!!! note "Пустые обновления"
+    MAX иногда присылает `{"update_type": "message_created", "timestamp": ...}` без `message`.
+    Диспетчер такие обновления молча пропускает (`EmptyUpdateError`, лог уровня DEBUG):
+    outer-middleware на `dp.update` их видят, обработчики `message` — нет.
 
 ## Типы обновлений и их поля
 
@@ -33,7 +43,15 @@ class Update(MaxObject):
 | `message_created` | `message`, `user_locale?` | `Message` |
 | `message_callback` | `callback`, `message`, `user_locale?` | `Callback` |
 | `message_edited` | `message` | `Message` |
-| `message_removed` | `message_id`, `chat_id`, `user_id` | `MessageRemoved` |
+| `message_removed` | `message_id`, `chat_id`, `user_id`, `post_id?` | `MessageRemoved` |
+
+**Комментарии к постам** (бот — админ канала с `read_all_messages`, на свои действия событий нет):
+
+| `update_type` | Поля | Event |
+| --- | --- | --- |
+| `comment_created` | `message` | `Message` |
+| `comment_edited` | `message` | `Message` |
+| `comment_removed` | `message_id`, `chat_id`, `user_id`, `post_id` | `CommentRemoved` |
 
 **Бот:**
 
@@ -43,6 +61,9 @@ class Update(MaxObject):
 | `bot_stopped` | `chat_id`, `user`, `user_locale` | `BotStopped` |
 | `bot_added` | `chat_id`, `user`, `is_channel` | `BotAdded` |
 | `bot_removed` | `chat_id`, `user`, `is_channel` | `BotRemoved` |
+| `bot_admin_permissions_changed` | `chat_id`, `user_id`, `bot_id`, `is_channel`, `is_admin`, `permissions?` | `BotAdminPermissionsChanged` |
+
+`bot_admin_permissions_changed` приходит только через Webhook — в Long Polling его нет.
 
 **Пользователи и чат:**
 
@@ -72,6 +93,8 @@ from maxgram.types import (
     BotAdded, BotRemoved,                      # bot in chat
     UserAdded, UserRemoved,                    # user in chat
     ChatTitleChanged, MessageRemoved,           # chat events
+    CommentRemoved,                            # comment_removed
+    BotAdminPermissionsChanged,                # bot admin rights changed
     DialogMuted, DialogUnmuted,                # dialog events
     DialogCleared, DialogRemoved,
 )
@@ -83,6 +106,10 @@ from maxgram.types import (
 - `message_callback` -> `Callback`
 - `message_edited` -> `Message`
 - `message_removed` -> `MessageRemoved`
+- `comment_created` -> `Message`
+- `comment_edited` -> `Message`
+- `comment_removed` -> `CommentRemoved`
+- `bot_admin_permissions_changed` -> `BotAdminPermissionsChanged`
 - `bot_started` -> `BotStarted`
 - `bot_stopped` -> `BotStopped`
 - `bot_added` -> `BotAdded`

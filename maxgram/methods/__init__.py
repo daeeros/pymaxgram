@@ -4,16 +4,20 @@ from .assign_admins import AssignAdmins
 from .base import MaxMethod, MaxType, Response
 from .create_subscription import CreateSubscription
 from .delete_chat import DeleteChat
+from .delete_comment import DeleteComment
 from .delete_message import DeleteMessage
 from .delete_subscription import DeleteSubscription
 from .edit_bot_commands import EditBotCommands
 from .edit_bot_info import EditBotInfo
 from .edit_chat import EditChat
+from .edit_comment import EditComment
 from .edit_message import EditMessage
 from .get_admins import GetAdmins
 from .get_chat import GetChat
 from .get_chat_by_link import GetChatByLink
 from .get_chats import GetChats
+from .get_comment import GetComment
+from .get_comments import GetComments
 from .get_me import GetMe
 from .get_members import GetMembers
 from .get_message_by_id import GetMessageById
@@ -29,6 +33,7 @@ from .pin_message import PinMessage
 from .remove_admin import RemoveAdmin
 from .remove_member import RemoveMember
 from .send_action import SendAction
+from .send_comment import SendComment
 from .send_message import SendMessage
 from .unpin_message import UnpinMessage
 
@@ -38,16 +43,20 @@ __all__ = [
     "AssignAdmins",
     "CreateSubscription",
     "DeleteChat",
+    "DeleteComment",
     "DeleteMessage",
     "DeleteSubscription",
     "EditBotCommands",
     "EditBotInfo",
     "EditChat",
+    "EditComment",
     "EditMessage",
     "GetAdmins",
     "GetChat",
     "GetChatByLink",
     "GetChats",
+    "GetComment",
+    "GetComments",
     "GetMe",
     "GetMembers",
     "GetMessageById",
@@ -66,6 +75,7 @@ __all__ = [
     "RemoveMember",
     "Response",
     "SendAction",
+    "SendComment",
     "SendMessage",
     "UnpinMessage",
 ]

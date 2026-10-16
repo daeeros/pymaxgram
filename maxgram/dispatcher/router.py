@@ -29,6 +29,9 @@ class Router:
         self.message_callback = MaxEventObserver(router=self, event_name="message_callback")
         self.message_edited = MaxEventObserver(router=self, event_name="message_edited")
         self.message_removed = MaxEventObserver(router=self, event_name="message_removed")
+        self.comment = MaxEventObserver(router=self, event_name="comment_created")
+        self.comment_edited = MaxEventObserver(router=self, event_name="comment_edited")
+        self.comment_removed = MaxEventObserver(router=self, event_name="comment_removed")
         self.bot_started = MaxEventObserver(router=self, event_name="bot_started")
         self.bot_stopped = MaxEventObserver(router=self, event_name="bot_stopped")
         self.bot_added = MaxEventObserver(router=self, event_name="bot_added")
@@ -40,6 +43,9 @@ class Router:
         self.dialog_unmuted = MaxEventObserver(router=self, event_name="dialog_unmuted")
         self.dialog_cleared = MaxEventObserver(router=self, event_name="dialog_cleared")
         self.dialog_removed = MaxEventObserver(router=self, event_name="dialog_removed")
+        self.bot_admin_permissions_changed = MaxEventObserver(
+            router=self, event_name="bot_admin_permissions_changed",
+        )
 
         self.errors = self.error = MaxEventObserver(router=self, event_name="error")
 
@@ -51,6 +57,9 @@ class Router:
             "message_callback": self.message_callback,
             "message_edited": self.message_edited,
             "message_removed": self.message_removed,
+            "comment_created": self.comment,
+            "comment_edited": self.comment_edited,
+            "comment_removed": self.comment_removed,
             "bot_started": self.bot_started,
             "bot_stopped": self.bot_stopped,
             "bot_added": self.bot_added,
@@ -62,6 +71,7 @@ class Router:
             "dialog_unmuted": self.dialog_unmuted,
             "dialog_cleared": self.dialog_cleared,
             "dialog_removed": self.dialog_removed,
+            "bot_admin_permissions_changed": self.bot_admin_permissions_changed,
             "error": self.errors,
         }
 

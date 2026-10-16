@@ -6,7 +6,12 @@ to fields specific to each event type. Used as type hints in handlers.
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import Any
 
+from pydantic import model_validator
+
+from ..enums.chat_admin_permission import ChatAdminPermission
+from .chat_member import drop_unknown_permissions
 from .update import Update
 from .user import User
 
@@ -106,6 +111,37 @@ class MessageRemoved(Update):
     message_id: str = ""
     chat_id: int = 0
     user_id: int = 0
+    post_id: str | None = None
+
+
+class CommentRemoved(Update):
+    """comment_removed: comment under a channel post was deleted.
+
+    Bot gets it only as a channel admin with ``read_all_messages``,
+    and never for its own actions.
+    """
+    message_id: str = ""
+    chat_id: int = 0
+    user_id: int = 0
+    post_id: str | None = None
+
+
+class BotAdminPermissionsChanged(Update):
+    """bot_admin_permissions_changed: bot's admin rights changed in a chat or channel.
+
+    Delivered via webhook only - long polling doesn't get this update.
+    """
+    chat_id: int
+    user_id: int
+    bot_id: int
+    is_channel: bool = False
+    is_admin: bool = False
+    permissions: list[ChatAdminPermission] | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _drop_unknown_permissions(cls, data: Any) -> Any:
+        return drop_unknown_permissions(data)
 
 
 class DialogMuted(Update):
@@ -147,6 +183,8 @@ EVENT_TYPE_MAP: dict[str, type[Update]] = {
     "user_removed": UserRemoved,
     "chat_title_changed": ChatTitleChanged,
     "message_removed": MessageRemoved,
+    "comment_removed": CommentRemoved,
+    "bot_admin_permissions_changed": BotAdminPermissionsChanged,
     "dialog_muted": DialogMuted,
     "dialog_unmuted": DialogUnmuted,
     "dialog_cleared": DialogCleared,

@@ -25,6 +25,7 @@ class Callback(MaxObject):
         format: str | None = None,
         keyboard: Any | None = None,
         clear_attachments: bool = True,
+        disable_link_preview: bool | None = None,
         **kwargs: Any,
     ) -> bool:
         from ..methods.answer_callback import AnswerCallback
@@ -34,6 +35,12 @@ class Callback(MaxObject):
         # Only apply default parse_mode when there's actual text to format
         if text is not None and format is None and bot.default.parse_mode:
             format = bot.default.parse_mode
+        if (
+            text is not None
+            and disable_link_preview is None
+            and bot.default.disable_link_preview is not None
+        ):
+            disable_link_preview = bot.default.disable_link_preview
         attachments = prepare_keyboard(attachments, keyboard)
         if attachments is None and clear_attachments:
             attachments = []
@@ -45,6 +52,7 @@ class Callback(MaxObject):
             notification=notification,
             notify=notify,
             format=format,
+            disable_link_preview=disable_link_preview,
             **kwargs,
         ).as_(bot)
 

@@ -18,7 +18,7 @@ from maxgram.fsm.strategy import FSMStrategy
 from maxgram.methods import GetUpdates, MaxMethod
 from maxgram.types import Update
 from maxgram.types.base import UNSET, UNSET_TYPE
-from maxgram.types.update import UpdateTypeLookupError
+from maxgram.types.update import EmptyUpdateError, UpdateTypeLookupError
 from maxgram.utils.backoff import Backoff, BackoffConfig
 
 from .event.bases import UNHANDLED, SkipHandler
@@ -261,6 +261,11 @@ class Dispatcher(Router):
         try:
             update_type = update.event_type
             event = update.event
+        except EmptyUpdateError:
+            # MAX delivers some message_created updates with no message inside;
+            # nothing to route, and a warning per update floods the logs.
+            loggers.event.debug("Skip %s update without payload", update.update_type)
+            raise SkipHandler() from None
         except UpdateTypeLookupError as e:
             warnings.warn(
                 "Detected unknown update type.\n"

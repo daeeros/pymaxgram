@@ -46,6 +46,7 @@ from .callback import Callback
 from .chat import Chat
 from .chat_admin import ChatAdmin
 from .chat_member import ChatMember
+from .comment_message import CommentLinkedMessage, CommentMessage, CommentMessageBody
 from .image import Image
 from .inline_keyboard import InlineKeyboard
 from .input_file import BufferedInputFile, FSInputFile, InputFile, URLInputFile
@@ -59,13 +60,15 @@ from .new_message_body import NewMessageBody
 from .new_message_link import NewMessageLink
 from .recipient import Recipient
 from .subscription import Subscription
-from .update import Update, UpdateTypeLookupError
+from .update import EmptyUpdateError, Update, UpdateTypeLookupError
 from .events import (
     BotAdded,
+    BotAdminPermissionsChanged,
     BotRemoved,
     BotStarted,
     BotStopped,
     ChatTitleChanged,
+    CommentRemoved,
     DialogCleared,
     DialogMuted,
     DialogRemoved,
@@ -83,6 +86,8 @@ from .video_info import VideoInfo, VideoUrls
 Chat.model_rebuild()
 LinkedMessage.model_rebuild()
 Message.model_rebuild()
+CommentLinkedMessage.model_rebuild()
+CommentMessage.model_rebuild()
 Callback.model_rebuild()
 Update.model_rebuild()
 ErrorEvent.model_rebuild()
@@ -92,10 +97,12 @@ __all__ = [
     "ErrorEvent",
     "Attachment",
     "BotAdded",
+    "BotAdminPermissionsChanged",
     "BotRemoved",
     "BotStarted",
     "BotStopped",
     "ChatTitleChanged",
+    "CommentRemoved",
     "DialogCleared",
     "DialogMuted",
     "DialogRemoved",
@@ -118,6 +125,9 @@ __all__ = [
     "Chat",
     "ChatAdmin",
     "ChatMember",
+    "CommentLinkedMessage",
+    "CommentMessage",
+    "CommentMessageBody",
     "ContactAttachment",
     "ContactAttachmentPayload",
     "FSInputFile",
@@ -161,6 +171,7 @@ __all__ = [
     "URLInputFile",
     "Update",
     "UpdateTypeLookupError",
+    "EmptyUpdateError",
     "UploadInfo",
     "User",
     "UserWithPhoto",

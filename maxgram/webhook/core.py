@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import secrets
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
+
+from maxgram import loggers
+from maxgram.types import Update
 
 if TYPE_CHECKING:
     from maxgram.client.bot import Bot
@@ -71,11 +75,7 @@ class WebhookProcessor:
         if not self.verify_secret(secret_header):
             return WebhookResult(status=401, body={"error": "Unauthorized"})
         if self.handle_in_background:
-            task = asyncio.create_task(
-                self.dispatcher.feed_raw_update(
-                    bot=self.bot, update=payload, **self.data
-                )
-            )
+            task = asyncio.create_task(self._feed_in_background(payload))
             self._background_tasks.add(task)
             task.add_done_callback(self._background_tasks.discard)
         else:
@@ -83,6 +83,23 @@ class WebhookProcessor:
                 self.bot, payload, **self.data
             )
         return WebhookResult(status=200, body={})
+
+    async def _feed_in_background(self, payload: dict[str, Any]) -> None:
+        """Process an update in a task that never ends with an exception.
+
+        A failed task whose exception nobody retrieves gets logged again by
+        ``Task.__del__`` ("Task exception was never retrieved") at garbage
+        collection time, from whatever thread runs the collector. Inside a
+        logging handler's worker thread that can deadlock the logger.
+        """
+        try:
+            update = Update.model_validate(payload, context={"bot": self.bot})
+        except Exception:
+            update_type = payload.get("update_type") if isinstance(payload, dict) else None
+            loggers.webhook.exception("Failed to parse webhook update type=%s", update_type)
+            return
+        with contextlib.suppress(Exception):  # already logged by the dispatcher
+            await self.dispatcher.feed_webhook_update(self.bot, update, **self.data)
 
     async def close(self) -> None:
         await self.bot.session.close()

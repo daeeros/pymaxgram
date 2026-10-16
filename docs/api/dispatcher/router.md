@@ -16,6 +16,9 @@ class Router:
 | `message_callback` | `MaxEventObserver` | `message_callback` — нажатия inline-кнопок |
 | `message_edited` | `MaxEventObserver` | `message_edited` — редактирование сообщений |
 | `message_removed` | `MaxEventObserver` | `message_removed` — удаление сообщений |
+| `comment` | `MaxEventObserver` | `comment_created` — новый комментарий к посту |
+| `comment_edited` | `MaxEventObserver` | `comment_edited` — комментарий изменён |
+| `comment_removed` | `MaxEventObserver` | `comment_removed` — комментарий удалён |
 | `bot_started` | `MaxEventObserver` | `bot_started` — запуск бота |
 | `bot_stopped` | `MaxEventObserver` | `bot_stopped` — остановка бота |
 | `bot_added` | `MaxEventObserver` | `bot_added` — бот добавлен в чат |
@@ -27,6 +30,7 @@ class Router:
 | `dialog_unmuted` | `MaxEventObserver` | `dialog_unmuted` — уведомления включены |
 | `dialog_cleared` | `MaxEventObserver` | `dialog_cleared` — диалог очищен |
 | `dialog_removed` | `MaxEventObserver` | `dialog_removed` — диалог удалён |
+| `bot_admin_permissions_changed` | `MaxEventObserver` | `bot_admin_permissions_changed` — изменены права бота-админа (только Webhook) |
 | `error` / `errors` | `MaxEventObserver` | Ошибки обработки |
 | `startup` | `EventObserver` | Событие запуска |
 | `shutdown` | `EventObserver` | Событие остановки |

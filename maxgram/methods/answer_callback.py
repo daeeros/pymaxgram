@@ -18,9 +18,13 @@ class AnswerCallback(MaxMethod[bool]):
     notification: str | None = None
     notify: bool | None = None
     format: str | None = None
+    disable_link_preview: bool | None = None
 
     def build_query_params(self) -> dict[str, Any]:
-        return {"callback_id": self.callback_id}
+        params: dict[str, Any] = {"callback_id": self.callback_id}
+        if self.disable_link_preview is not None:
+            params["disable_link_preview"] = str(self.disable_link_preview).lower()
+        return params
 
     def build_request_body(self) -> dict[str, Any] | None:
         body: dict[str, Any] = {}

@@ -12,9 +12,10 @@ class AnswerCallback(MaxMethod[bool]):
     notification: str | None = None
     notify: bool | None = None
     format: str | None = None
+    disable_link_preview: bool | None = None
 ```
 
-- `callback_id` передаётся как query param
+- `callback_id` и `disable_link_preview` передаются как query params
 - Остальные поля формируют тело запроса в виде `{"message": {...}}`
 
 ### Поля
@@ -27,6 +28,7 @@ class AnswerCallback(MaxMethod[bool]):
 | `notification` | `str \| None` | Всплывающее уведомление |
 | `notify` | `bool \| None` | Отправить push-уведомление |
 | `format` | `str \| None` | Формат текста (`"html"` / `"markdown"`) |
+| `disable_link_preview` | `bool \| None` | Не генерировать превью ссылок в изменённом сообщении |
 
 ## Исходный файл
 

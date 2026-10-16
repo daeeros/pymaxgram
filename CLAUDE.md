@@ -37,13 +37,15 @@ MAX API → Bot.get_updates() → Update → Dispatcher → Router tree → Obse
 
 - **`Bot`** (`client/bot.py`) — HTTP client wrapping all MAX API methods. Accepts `**kwargs` as custom attributes. `DefaultBotProperties` for parse_mode/notify defaults that auto-apply to all send methods.
 - **`Dispatcher`** (`dispatcher/dispatcher.py`) — Root Router. Manages polling loop, FSM middleware, error handling. `updates_debug`/`requests_debug` flags for logging.
-- **`Router`** (`dispatcher/router.py`) — 15 event observers (`message`, `message_callback`, `bot_started`, `bot_stopped`, `bot_added`, `bot_removed`, `user_added`, `user_removed`, `message_edited`, `message_removed`, `chat_title_changed`, `dialog_muted`, `dialog_unmuted`, `dialog_cleared`, `dialog_removed`) + `error`, `startup`, `shutdown`.
+- **`Router`** (`dispatcher/router.py`) — 19 event observers (`message`, `message_callback`, `bot_started`, `bot_stopped`, `bot_added`, `bot_removed`, `user_added`, `user_removed`, `message_edited`, `message_removed`, `comment` (`comment_created`), `comment_edited`, `comment_removed`, `chat_title_changed`, `dialog_muted`, `dialog_unmuted`, `dialog_cleared`, `dialog_removed`, `bot_admin_permissions_changed`) + `error`, `startup`, `shutdown`.
 - **`MaxObject`** (`types/base.py`) — Base Pydantic model: `frozen=True`, `extra="allow"`, `defer_build=True`. UNSET sentinel for optional params.
 - **`Update`** (`types/update.py`) — Incoming event. `model_validator(mode="before")` copies `message` into `callback` for `message_callback` type. `event` property returns typed subclass via `EVENT_TYPE_MAP`.
 
 ### Typed Events (`types/events.py`)
 
-Each `update_type` returns a typed class: `BotStarted`, `BotStopped`, `BotAdded`, `BotRemoved`, `UserAdded`, `UserRemoved`, `ChatTitleChanged`, `MessageRemoved`, `DialogMuted`, `DialogUnmuted`, `DialogCleared`, `DialogRemoved`. Message-based types return `Message` or `Callback` directly.
+Each `update_type` returns a typed class: `BotStarted`, `BotStopped`, `BotAdded`, `BotRemoved`, `UserAdded`, `UserRemoved`, `ChatTitleChanged`, `MessageRemoved`, `CommentRemoved`, `BotAdminPermissionsChanged`, `DialogMuted`, `DialogUnmuted`, `DialogCleared`, `DialogRemoved`. Message-based types (`message_created`, `message_edited`, `comment_created`, `comment_edited`) return `Message`, `message_callback` returns `Callback`.
+
+MAX sends some `message_created` updates with no `message` at all (raw body is just `{"timestamp":...,"update_type":"message_created"}`, tens of thousands a day for a bot in many groups). `Update.event` raises `EmptyUpdateError` (subclass of `UpdateTypeLookupError`) for a known message-type update without its payload; `Dispatcher._listen_update` skips it with a DEBUG log instead of the per-update `RuntimeWarning` reserved for truly unknown types.
 
 ### Method Pattern (`methods/base.py`)
 
@@ -56,6 +58,14 @@ All API methods inherit `MaxMethod[ReturnType]` with class vars `__returning__`,
 ### Middleware
 
 `BaseMiddleware.__call__(handler, event, data) -> Any`. Outer middleware runs for all events; inner only when handler matched. Built-in: `ErrorsMiddleware`, `UserContextMiddleware`, `FSMContextMiddleware`.
+
+### Comments
+
+Comments under channel posts: `GetComments`, `GetComment`, `SendComment`, `EditComment`, `DeleteComment` (`/messages/{message_id}/comments`, `message_id` is the post `mid`). They return/carry `CommentMessage` (no `url`, body without attachments). Edit/delete pass `comment_id` as a query param; `POST` returns `{"message": CommentMessage}` which `check_response` unwraps. Comment updates: `comment_created`/`comment_edited` carry a `Message`, `comment_removed` → `CommentRemoved` with `post_id`. The bot never gets updates for its own comments.
+
+### Webhook background tasks
+
+`WebhookProcessor` (`webhook/core.py`) runs each update in `_feed_in_background`, which swallows handler exceptions (the dispatcher already logged them) and logs parse failures. Never let these tasks end with an exception: asyncio then logs "Task exception was never retrieved" from `Task.__del__` during GC, in whatever thread runs the collector — inside a loguru `enqueue=True` worker that deadlocks the whole process.
 
 ### Channels
 

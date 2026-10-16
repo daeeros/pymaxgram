@@ -12,16 +12,20 @@ from ..methods import (
     AssignAdmins,
     CreateSubscription,
     DeleteChat,
+    DeleteComment,
     DeleteMessage,
     DeleteSubscription,
     EditBotCommands,
     EditBotInfo,
     EditChat,
+    EditComment,
     EditMessage,
     GetAdmins,
     GetChat,
     GetChatByLink,
     GetChats,
+    GetComment,
+    GetComments,
     GetMe,
     GetMembers,
     GetMessageById,
@@ -38,6 +42,7 @@ from ..methods import (
     RemoveAdmin,
     RemoveMember,
     SendAction,
+    SendComment,
     SendMessage,
     UnpinMessage,
 )
@@ -47,6 +52,7 @@ from ..types import (
     BotInfo,
     Chat,
     ChatMember,
+    CommentMessage,
     MarkedList,
     Message,
     Subscription,
@@ -205,9 +211,11 @@ class Bot:
         icon: dict[str, Any] | None = None,
         pin: str | None = None,
         notify: bool | None = None,
+        description: str | None = None,
     ) -> Chat:
         return await self(EditChat(
             chat_id=chat_id, title=title, icon=icon, pin=pin, notify=notify,
+            description=description,
         ))
 
     async def delete_chat(self, chat_id: int) -> bool:
@@ -389,6 +397,65 @@ class Bot:
     async def get_message_by_id(self, message_id: str) -> Message:
         return await self(GetMessageById(message_id=message_id))
 
+    # ==================== Comments ====================
+
+    async def get_comments(
+        self,
+        message_id: str,
+        comment_ids: list[str] | None = None,
+        before: int | None = None,
+        after: int | None = None,
+        count: int | None = None,
+    ) -> list[CommentMessage]:
+        return await self(GetComments(
+            message_id=message_id, comment_ids=comment_ids,
+            before=before, after=after, count=count,
+        ))
+
+    async def get_comment(self, message_id: str, comment_id: str) -> CommentMessage:
+        return await self(GetComment(message_id=message_id, comment_id=comment_id))
+
+    async def send_comment(
+        self,
+        message_id: str,
+        text: str | None = None,
+        link: Any | None = None,
+        format: str | None = None,
+        disable_link_preview: bool | None = None,
+    ) -> CommentMessage:
+        if format is None and self.default.parse_mode:
+            format = self.default.parse_mode
+        if disable_link_preview is None and self.default.disable_link_preview is not None:
+            disable_link_preview = self.default.disable_link_preview
+        return await self(SendComment(
+            message_id=message_id,
+            text=text,
+            link=link,
+            format=format,
+            disable_link_preview=disable_link_preview,
+        ))
+
+    async def edit_comment(
+        self,
+        message_id: str,
+        comment_id: str,
+        text: str | None = None,
+        link: Any | None = None,
+        format: str | None = None,
+    ) -> bool:
+        if format is None and self.default.parse_mode:
+            format = self.default.parse_mode
+        return await self(EditComment(
+            message_id=message_id,
+            comment_id=comment_id,
+            text=text,
+            link=link,
+            format=format,
+        ))
+
+    async def delete_comment(self, message_id: str, comment_id: str) -> bool:
+        return await self(DeleteComment(message_id=message_id, comment_id=comment_id))
+
     # ==================== Uploads ====================
 
     async def get_upload_url(self, type: str) -> UploadInfo:
@@ -426,11 +493,18 @@ class Bot:
         notify: bool | None = None,
         format: str | None = None,
         keyboard: Any | None = None,
+        disable_link_preview: bool | None = None,
     ) -> bool:
         from ..utils.keyboard import prepare_keyboard
 
         if text is not None and format is None and self.default.parse_mode:
             format = self.default.parse_mode
+        if (
+            text is not None
+            and disable_link_preview is None
+            and self.default.disable_link_preview is not None
+        ):
+            disable_link_preview = self.default.disable_link_preview
         attachments = prepare_keyboard(attachments, keyboard)
         return await self(AnswerCallback(
             callback_id=callback_id,
@@ -439,4 +513,5 @@ class Bot:
             notification=notification,
             notify=notify,
             format=format,
+            disable_link_preview=disable_link_preview,
         ))

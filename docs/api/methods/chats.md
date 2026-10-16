@@ -37,6 +37,7 @@ class EditChat(MaxMethod[Chat]):
     chat_id: int
     icon: dict[str, Any] | None = None
     title: str | None = None
+    description: str | None = None  # 0–16000 символов, "" удаляет описание
     pin: str | None = None
     notify: bool | None = None
 ```

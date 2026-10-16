@@ -93,6 +93,7 @@ nav:
           - api/methods/index.md
           - Base: api/methods/base.md
           - Сообщения: api/methods/messages.md
+          - Комментарии: api/methods/comments.md
           - Чаты: api/methods/chats.md
           - Участники: api/methods/members.md
           - Админы: api/methods/admins.md

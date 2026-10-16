@@ -122,8 +122,8 @@ class BaseSession(abc.ABC):
                     if isinstance(json_data, dict):
                         # Some endpoints wrap result in a key (e.g., POST /messages returns {message: ...})
                         if "message" in json_data and isinstance(json_data["message"], dict):
-                            # Could be a Message-wrapped response (like POST /messages)
-                            if returning_type.__name__ in ("Message",):
+                            # Message-wrapped response (POST /messages, POST /messages/{id}/comments)
+                            if returning_type.__name__ in ("Message", "CommentMessage"):
                                 return returning_type.model_validate(
                                     json_data["message"], context={"bot": bot}
                                 )

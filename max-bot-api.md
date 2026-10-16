@@ -2,6 +2,7 @@
 
 > Исчерпывающее руководство по использованию HTTP API мессенджера MAX для разработки чат-ботов.
 > Источник: https://dev.max.ru/docs-api
+> Официальная OpenAPI-спецификация: https://github.com/max-messenger/api-schema (`schema.yaml`)
 
 ---
 
@@ -20,6 +21,7 @@
    - [subscriptions](#subscriptions)
    - [upload](#upload)
    - [messages](#messages)
+   - [comments](#comments)
    - [answers](#answers)
 9. [Объекты](#объекты)
 
@@ -354,7 +356,7 @@ curl -X GET "https://platform-api.max.ru/chats/{chatLink}" \
 
 ### PATCH `/chats/{chatId}` — Изменение информации о групповом чате
 
-Позволяет редактировать название, иконку, закреплённое сообщение.
+Позволяет редактировать название, описание, иконку, закреплённое сообщение.
 
 **Пример:**
 ```bash
@@ -376,6 +378,7 @@ curl -X PATCH "https://platform-api.max.ru/chats/{chatId}" \
 | -------- | --------------------------------------- | ----------------------------------------- |
 | `icon`   | `PhotoAttachmentRequestPayload`, nullable | Изображение (поля взаимоисключающие)    |
 | `title`  | string, nullable, 1–200 символов        | Новое название                            |
+| `description` | string, nullable, 0–16000 символов | Новое описание; пустая строка удаляет описание |
 | `pin`    | string, nullable                        | ID сообщения, которое закрепить           |
 | `notify` | boolean, default `true`                 | Уведомлять ли участников об изменении     |
 
@@ -1053,6 +1056,57 @@ curl -X GET "https://platform-api.max.ru/videos/{video_token}" \
 
 ---
 
+## comments
+
+Комментарии к постам в каналах (добавлены в августе 2026). `messageId` — `mid` поста. Бот должен быть администратором канала. Вложения в комментариях не поддерживаются, пересылка (`link.type = forward`) — тоже; упоминания и гиперссылки в тексте не работают.
+
+### GET `/messages/{messageId}/comments` — Комментарии к посту
+
+Нужно право `read_all_messages`. Новые комментарии идут первыми.
+
+**Query-параметры:**
+
+| Параметр      | Тип                  | Описание                                                        |
+| ------------- | -------------------- | --------------------------------------------------------------- |
+| `comment_ids` | string[] (через запятую), nullable | Только эти комментарии; пагинация игнорируется      |
+| `before`      | int64                | Комментарии до этого времени (Unix ms)                          |
+| `after`       | int64                | Комментарии после этого времени (Unix ms)                       |
+| `count`       | int, 1–100, default 50 | Сколько комментариев вернуть                                  |
+
+**Результат:** `{ "messages": CommentMessage[] }`.
+
+### GET `/messages/{messageId}/comments/{commentId}` — Один комментарий
+
+Нужно право `read_all_messages`. **Результат:** [`CommentMessage`](#commentmessage). 404 — комментарий/пост не найден или нет доступа.
+
+### POST `/messages/{messageId}/comments` — Отправить комментарий
+
+Нужны права `read_all_messages` и `write`, в канале должны быть включены комментарии.
+
+**Query-параметры:** `disable_link_preview` — boolean, default `false`.
+
+**Тело запроса (`NewCommentBody`):**
+
+| Поле     | Тип                              | Описание                       |
+| -------- | -------------------------------- | ------------------------------ |
+| `text`   | string, nullable, до 4000 символов | Текст комментария            |
+| `link`   | `NewMessageLink`, nullable       | Ответ на комментарий           |
+| `format` | `"markdown"` \| `"html"`, nullable | Разметка текста             |
+
+**Результат:** `{ "message": CommentMessage }`.
+
+### PUT `/messages/{messageId}/comments` — Редактировать комментарий
+
+**Query-параметры:** `comment_id` — string, обязательный. **Тело:** `NewCommentBody`. **Результат:** `{ success, message }`.
+
+Только в течение 26 ч после публикации, иначе 422 `comments.timeout_exceeded`. С правом `edit` бот может править комментарии от имени канала, без него — только свои.
+
+### DELETE `/messages/{messageId}/comments` — Удалить комментарий
+
+**Query-параметры:** `comment_id` — string, обязательный. Нужны права `read_all_messages` и `delete`. **Результат:** `{ success, message }`.
+
+---
+
 ## answers
 
 ### POST `/answers` — Ответ на callback
@@ -1086,6 +1140,7 @@ curl -X POST "https://platform-api.max.ru/answers?callback_id=callback_id" \
 | Параметр      | Тип    | Описание                                                                                                      |
 | ------------- | ------ | ------------------------------------------------------------------------------------------------------------- |
 | `callback_id` | string | ID нажатой кнопки. Приходит в `Update` с типом `message_callback`, поле `updates[i].callback.callback_id`    |
+| `disable_link_preview` | boolean | Если `true`, не генерировать превью ссылок в изменённом сообщении (default `false`) |
 
 **Тело запроса:**
 
@@ -1188,6 +1243,19 @@ curl -X POST "https://platform-api.max.ru/answers?callback_id=callback_id" \
 
 ---
 
+## CommentMessage
+
+Комментарий к посту. В отличие от `Message` нет `url`, а в `body` нет `attachments`.
+
+| Поле        | Тип                                | Описание                                         |
+| ----------- | ---------------------------------- | ------------------------------------------------ |
+| `sender`    | [`User`](#user), nullable          | Автор; null, если от имени канала                |
+| `recipient` | `Recipient`                        | Для комментариев — канал                         |
+| `timestamp` | int64                              | Время создания (Unix ms)                         |
+| `link`      | `CommentLinkedMessage`, nullable   | Комментарий, на который это ответ                |
+| `body`      | `CommentMessageBody`               | `mid`, `seq`, `text`, `markup`                   |
+| `stat`      | `MessageStat`, nullable            | Статистика                                       |
+
 ## Message
 
 Сообщение в чате.
@@ -1266,6 +1334,8 @@ curl -X POST "https://platform-api.max.ru/answers?callback_id=callback_id" \
 | `message`     | [`Message`](#message) | Новое сообщение                             |
 | `user_locale` | string, nullable      | Язык пользователя (IETF BCP 47), только в диалогах |
 
+> **Поправка (наблюдается в проде с сентября 2026):** часть `message_created` приходит вообще без `message` — тело вебхука ровно `{"timestamp":1792180595650,"update_type":"message_created"}`. У бота в десятках тысяч групп это десятки тысяч событий в сутки. Документация об этом молчит; обрабатывать такие события нечем, их надо пропускать.
+
 ### `message_callback` — нажата callback-кнопка
 
 | Поле          | Тип                       | Описание                                    |
@@ -1297,6 +1367,39 @@ curl -X POST "https://platform-api.max.ru/answers?callback_id=callback_id" \
 | `message_id`  | string                | ID удалённого сообщения                     |
 | `chat_id`     | int64                 | ID чата                                     |
 | `user_id`     | int64                 | ID пользователя, удалившего сообщение       |
+| `post_id`     | string, nullable      | ID поста в канале (для комментариев)        |
+
+### `comment_created` / `comment_edited` — комментарий к посту создан / изменён
+
+Приходит, только если бот — админ канала с `read_all_messages`. На собственные действия бота события не приходят.
+
+| Поле          | Тип                   | Описание                                    |
+| ------------- | --------------------- | ------------------------------------------- |
+| `message`     | [`Message`](#message) | Новый / отредактированный комментарий       |
+
+### `comment_removed` — комментарий удалён
+
+| Поле          | Тип                   | Описание                                    |
+| ------------- | --------------------- | ------------------------------------------- |
+| `message_id`  | string                | ID удалённого комментария                   |
+| `chat_id`     | int64                 | ID канала                                   |
+| `user_id`     | int64                 | Кто удалил                                  |
+| `post_id`     | string, nullable      | ID поста                                    |
+
+### `bot_admin_permissions_changed` — изменены права бота-администратора
+
+Добавлено в октябре 2026. Только через Webhook (подписаться через `POST /subscriptions`), в Long Polling недоступно.
+
+| Поле          | Тип                   | Описание                                    |
+| ------------- | --------------------- | ------------------------------------------- |
+| `chat_id`     | int64                 | Чат или канал                               |
+| `user_id`     | int64                 | Кто изменил права                           |
+| `bot_id`      | int64                 | Бот, чьи права изменились                   |
+| `is_channel`  | boolean               | Событие в канале                            |
+| `is_admin`    | boolean               | Является ли бот админом после изменения     |
+| `permissions` | `ChatAdminPermission[]`, nullable | Новый набор прав                |
+
+Права: `read_all_messages`, `add_remove_members`, `add_admins`, `change_chat_info`, `pin_message`, `write`, `edit`, `delete`, `can_call`, `edit_link`, `view_stats`. `edit`/`delete`/`write` заменили старые `edit_message`/`delete_message`/`post_edit_delete_message` — в ответах могут приходить оба варианта.
 
 ### `bot_started` — пользователь запустил бота
 

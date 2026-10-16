@@ -14,12 +14,24 @@ class UpdateTypeLookupError(Exception):
     """Raised when update type is unknown."""
 
 
+class EmptyUpdateError(UpdateTypeLookupError):
+    """Known update type that arrived without its payload.
+
+    MAX sometimes delivers bare ``{"update_type": "message_created", "timestamp": ...}``
+    updates with no ``message`` inside. There is nothing to route them to.
+    """
+
+
+# Update types whose event is the ``message`` they carry
+_MESSAGE_PAYLOAD_TYPES = frozenset({"message_created", "comment_created", "comment_edited"})
+
+
 class Update(MaxObject):
     """Incoming update from MAX API."""
 
     update_type: str
     timestamp: int = 0
-    # message_created, message_callback, message_edited
+    # message_created, message_callback, message_edited, comment_created, comment_edited
     message: Message | None = None
     callback: Callback | None = None
     user_locale: str | None = None
@@ -37,11 +49,16 @@ class Update(MaxObject):
     admin_id: int | None = None
     # bot_added, bot_removed, user_added, user_removed
     is_channel: bool | None = None
-    # message_removed
+    # message_removed, comment_removed
     message_id: str | None = None
     user_id: int | None = None
+    post_id: str | None = None
     # dialog_muted
     muted_until: int | None = None
+    # bot_admin_permissions_changed
+    bot_id: int | None = None
+    is_admin: bool | None = None
+    permissions: list[str] | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -68,22 +85,24 @@ class Update(MaxObject):
     @property
     def event(self) -> Any:
         """Return the typed event object based on update_type."""
-        if self.update_type == "message_created":
+        if self.update_type in _MESSAGE_PAYLOAD_TYPES:
             if self.message is not None:
                 return self.message
-        elif self.update_type == "message_edited":
+            raise EmptyUpdateError(f"Update {self.update_type} has no message")
+        if self.update_type == "message_edited":
             if self.message is not None:
                 return self.message
             return self
-        elif self.update_type == "message_callback":
+        if self.update_type == "message_callback":
             if self.callback is not None:
                 return self.callback
-        else:
-            from .events import EVENT_TYPE_MAP
+            raise EmptyUpdateError("Update message_callback has no callback")
 
-            event_cls = EVENT_TYPE_MAP.get(self.update_type)
-            if event_cls is not None:
-                return self._as_typed_event(event_cls)
+        from .events import EVENT_TYPE_MAP
+
+        event_cls = EVENT_TYPE_MAP.get(self.update_type)
+        if event_cls is not None:
+            return self._as_typed_event(event_cls)
 
         raise UpdateTypeLookupError(
             f"Unknown or unsupported update type: {self.update_type}"

@@ -50,8 +50,12 @@ class ChatAdminPermission(str, Enum):
     CHANGE_CHAT_INFO = "change_chat_info"
     PIN_MESSAGE = "pin_message"
     WRITE = "write"
+    EDIT = "edit"
+    DELETE = "delete"
     CAN_CALL = "can_call"
     EDIT_LINK = "edit_link"
+    VIEW_STATS = "view_stats"
+    # Старые имена — MAX может возвращать их вместе с edit/delete/write
     POST_EDIT_DELETE_MESSAGE = "post_edit_delete_message"
     EDIT_MESSAGE = "edit_message"
     DELETE_MESSAGE = "delete_message"
@@ -121,6 +125,9 @@ class UpdateType(str, Enum):
     MESSAGE_CALLBACK = "message_callback"
     MESSAGE_EDITED = "message_edited"
     MESSAGE_REMOVED = "message_removed"
+    COMMENT_CREATED = "comment_created"
+    COMMENT_EDITED = "comment_edited"
+    COMMENT_REMOVED = "comment_removed"
     BOT_STARTED = "bot_started"
     BOT_STOPPED = "bot_stopped"
     BOT_ADDED = "bot_added"
@@ -132,6 +139,7 @@ class UpdateType(str, Enum):
     DIALOG_UNMUTED = "dialog_unmuted"
     DIALOG_CLEARED = "dialog_cleared"
     DIALOG_REMOVED = "dialog_removed"
+    BOT_ADMIN_PERMISSIONS_CHANGED = "bot_admin_permissions_changed"
 ```
 
 ## UploadType
