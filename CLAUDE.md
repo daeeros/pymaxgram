@@ -67,6 +67,8 @@ Comments under channel posts: `GetComments`, `GetComment`, `SendComment`, `EditC
 
 `WebhookProcessor` (`webhook/core.py`) runs each update in `_feed_in_background`, which swallows handler exceptions (the dispatcher already logged them) and logs parse failures. Never let these tasks end with an exception: asyncio then logs "Task exception was never retrieved" from `Task.__del__` during GC, in whatever thread runs the collector — inside a loguru `enqueue=True` worker that deadlocks the whole process.
 
+On stop, in-flight update tasks are drained (`utils/tasks.py:drain_tasks`, 15 s, then cancelled) before shutdown hooks and the bot session close: `WebhookProcessor.drain()` in every webhook backend, `_handle_update_tasks` in `start_polling`. Apps close their DB right after the webhook/polling stops, so without the drain handlers still running hit a closed pool. The FastAPI backend also turns an external cancel of its task into a proper `uvicorn` shutdown (socket close + lifespan shutdown). The aiohttp handler keeps one `WebhookProcessor` per bot — its task set holds the only strong refs to the background tasks.
+
 ### Channels
 
 Channel posts arrive as ordinary `message_created` updates — there is no channel-specific `update_type`. The bot must be a channel admin (`read_all_messages` + `write` is enough). Identify a channel post via `Message.is_channel_post` / `recipient.chat_type == "channel"`; `stat` and `url` are NOT populated on incoming updates despite the API reference. Channel posts have no `sender`. The bot's own messages do not come back as `message_created`. Filters: `ChannelPost()` / `ChatTypeFilter(*types)` in `filters/chat_type.py`.

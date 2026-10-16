@@ -66,6 +66,7 @@ async def run_sanic_backend(
 
     @app.before_server_stop
     async def _shutdown(app_: Any, loop_: Any) -> None:
+        await processor.drain()
         await dispatcher.emit_shutdown(**workflow_data)
         if close_bot_session:
             await bot.session.close()

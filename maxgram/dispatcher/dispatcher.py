@@ -20,6 +20,7 @@ from maxgram.types import Update
 from maxgram.types.base import UNSET, UNSET_TYPE
 from maxgram.types.update import EmptyUpdateError, UpdateTypeLookupError
 from maxgram.utils.backoff import Backoff, BackoffConfig
+from maxgram.utils.tasks import UPDATE_TASKS_DRAIN_TIMEOUT, drain_tasks
 
 from .event.bases import UNHANDLED, SkipHandler
 from .event.max import MaxEventObserver
@@ -506,6 +507,14 @@ class Dispatcher(Router):
 
             finally:
                 loggers.dispatcher.info("Polling stopped")
+                # Let handlers still running finish before shutdown hooks and the
+                # bot session close pull resources from under them
+                await drain_tasks(
+                    self._handle_update_tasks,
+                    timeout=UPDATE_TASKS_DRAIN_TIMEOUT,
+                    logger=loggers.dispatcher,
+                    what="update handlers",
+                )
                 try:
                     await self.emit_shutdown(bot=bots[-1], **workflow_data)
                 finally:

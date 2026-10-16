@@ -57,6 +57,7 @@ async def run_fastapi_backend(
         try:
             yield
         finally:
+            await processor.drain()
             await dispatcher.emit_shutdown(**workflow_data)
             if close_bot_session:
                 await bot.session.close()
@@ -119,8 +120,17 @@ async def run_fastapi_backend(
         stop_task = asyncio.create_task(_wait_and_stop())
         try:
             await server.serve()
+        except asyncio.CancelledError:
+            # Cancelled from outside (the app stops its webhook task): still shut uvicorn
+            # down properly - close the socket, run the lifespan shutdown - instead of
+            # leaving its lifespan task to be killed later with a CancelledError traceback.
+            if server.started:
+                await server.shutdown()
+            raise
         finally:
             stop_task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await stop_task
             loggers.webhook.info("Stopping webhook server (fastapi+uvicorn)")
+            # Also when this task gets cancelled and the lifespan shutdown never runs here
+            await processor.drain()

@@ -73,12 +73,17 @@ class BaseRequestHandler(ABC):
         self.dispatcher = dispatcher
         self.handle_in_background = handle_in_background
         self.data = data
+        # One processor per bot: it holds the only strong refs to background update
+        # tasks, so a per-request processor would let them be garbage-collected mid-run.
+        self._processors: dict[int, WebhookProcessor] = {}
 
     def register(self, app: Application, /, path: str, **kwargs: Any) -> None:
         app.on_shutdown.append(self._handle_close)
         app.router.add_route("POST", path, self.handle, **kwargs)
 
     async def _handle_close(self, *a: Any, **kw: Any) -> None:
+        for processor in self._processors.values():
+            await processor.drain()
         await self.close()
 
     @abstractmethod
@@ -100,14 +105,16 @@ class BaseRequestHandler(ABC):
         ):
             return web.Response(body="Unauthorized", status=401)
 
-        processor = WebhookProcessor(
-            dispatcher=self.dispatcher,
-            bot=bot,
-            secret_token=None,  # already verified above via resolve_bot-scoped logic
-            ip_filter=None,     # handled by ip_filter_middleware at app level
-            handle_in_background=self.handle_in_background,
-            data=self.data,
-        )
+        processor = self._processors.get(id(bot))
+        if processor is None:
+            processor = self._processors[id(bot)] = WebhookProcessor(
+                dispatcher=self.dispatcher,
+                bot=bot,
+                secret_token=None,  # already verified above via resolve_bot-scoped logic
+                ip_filter=None,     # handled by ip_filter_middleware at app level
+                handle_in_background=self.handle_in_background,
+                data=self.data,
+            )
         payload = await request.json(loads=bot.session.json_loads)
         result = await processor.process(payload)
         return web.json_response(

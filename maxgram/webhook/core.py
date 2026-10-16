@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 from maxgram import loggers
 from maxgram.types import Update
+from maxgram.utils.tasks import UPDATE_TASKS_DRAIN_TIMEOUT, drain_tasks
 
 if TYPE_CHECKING:
     from maxgram.client.bot import Bot
@@ -100,6 +101,12 @@ class WebhookProcessor:
             return
         with contextlib.suppress(Exception):  # already logged by the dispatcher
             await self.dispatcher.feed_webhook_update(self.bot, update, **self.data)
+
+    async def drain(self, timeout: float = UPDATE_TASKS_DRAIN_TIMEOUT) -> None:
+        """Wait for updates still being handled in the background. Call when the server stops."""
+        await drain_tasks(
+            self._background_tasks, timeout=timeout, logger=loggers.webhook, what="webhook updates",
+        )
 
     async def close(self) -> None:
         await self.bot.session.close()
